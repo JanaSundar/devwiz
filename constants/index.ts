@@ -1,3 +1,5 @@
+// TODO: implement commented functionality in next iterations
+
 export const routes = [
     {
         category: 'Converters',
@@ -6,10 +8,10 @@ export const routes = [
                 path: '/',
                 label: 'String Case Converter',
             },
-            {
-                path: '/color-converter',
-                label: 'Color Converter',
-            }
+            // {
+            //     path: '/color-converter',
+            //     label: 'Color Converter',
+            // }
         ]
     },
     {
@@ -44,14 +46,14 @@ export const routes = [
     {
         category: 'Generate',
         content: [
-            {
-                path: '/fake-data',
-                label: 'Fake data',
-            },
-            {
-                path: '/unique-id',
-                label: 'UUID / ULID',
-            },
+            // {
+            //     path: '/fake-data',
+            //     label: 'Fake data',
+            // },
+            // {
+            //     path: '/unique-id',
+            //     label: 'UUID / ULID',
+            // },
             {
                 path: '/lorem-ipsum',
                 label: 'Lorem Ipsum',
@@ -69,10 +71,10 @@ export const routes = [
                 path: '/url-encode-decode',
                 label: 'Encode / Decode',
             },
-            {
-                path: '/parse-url',
-                label: 'Parse',
-            }
+            // {
+            //     path: '/parse-url',
+            //     label: 'Parse',
+            // }
         ]
     },
     {

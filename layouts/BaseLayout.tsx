@@ -1,22 +1,20 @@
-import clsx from 'clsx'
 import React, { FC } from 'react'
+import { Toaster } from 'sonner'
+import Sidebar from '~/components/Sidebar'
 
 interface Props {
-    title: string,
     children: React.ReactNode
-    className?: string
 }
 
-const BaseLayout: FC<Props> = ({ title, children, className }) => {
+const BaseLayout: FC<Props> = ({ children }) => {
     return (
-        <div className='flex flex-col flex-1 divide-y-2 divide-gray-50/10'>
-            <div className='h-12 text-sm flex items-center px-2 text-indigo-300 uppercase font-bold tracking-wide'>
-                <h2>{title}</h2>
-            </div>
-            <div className={clsx('h-[calc(100vh_-_3rem)] flex', className)}>
+        <>
+            <main className='flex-1 flex h-full divide-x-2 divide-gray-50/10'>
+                <Sidebar />
                 {children}
-            </div>
-        </div>
+            </main>
+            <Toaster position="bottom-right" richColors />
+        </>
     )
 }
 
