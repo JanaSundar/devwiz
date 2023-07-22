@@ -1,19 +1,45 @@
 'use client'
-import { useEffect, useState } from 'react';
-import Editor from '~/components/Editor';
+
+import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 import TransformPanel from '~/components/TransformPanel';
-import { useDebounce } from '~/hooks/useDebounce';
-import axios from 'axios';
+import { Combobox } from '~/components/ui/Combobox';
+import { convertCase, stringCases } from '~/helper/string';
+
+interface Props {
+  setValue: React.Dispatch<React.SetStateAction<string>>,
+  value: string
+}
+
+const splitLines = (str: string) => str.split(/\r?\n/);
+
+const Options = (props: Props) => {
+  return (
+    <Combobox data={stringCases}
+      placeholder='Select a String Case'
+      {...props}
+    />
+  )
+}
+
 
 export default function Home() {
+  const [value, setValue] = React.useState('camelcase');
+
   return (
-    <TransformPanel
-      editorLanguage='html'
-      resultLanguage='javascript'
-      transformer={async (value) => {
-        const { data } = await axios.post<{ result: string }>("/api/svg2jsx", { svg: value });
-        return data
-      }}
-    />
+    <TransformPanel resultLanguage='plaintext' editorLanguage='plaintext' editorTitle='string input' resultTitle='result' editorHeaderElements={<Options {...{ value, setValue }} />} transformer={async (x) => {
+      if (value === '') {
+        toast('Select a String Case type to transform')
+        return { result: '' }
+      };
+
+      const values = splitLines(x);
+
+      const result = values.map((x) => {
+        return convertCase(x, value)
+      }).join('\n')
+
+      return { result }
+    }} />
   )
 }

@@ -21,10 +21,6 @@ const Slider = React.forwardRef<
       aria-label="Volume"
 
     />
-    <SliderPrimitive.Thumb
-      className="block w-5 h-5 bg-white shadow-[0_0_0.5rem] rounded-[10px] focus:outline-none"
-      aria-label="Volume"
-    />
   </SliderPrimitive.Root>
 ))
 Slider.displayName = SliderPrimitive.Root.displayName

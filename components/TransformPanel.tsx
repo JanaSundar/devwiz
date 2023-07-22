@@ -7,6 +7,7 @@ import { useDebounce } from '~/hooks/useDebounce';
 import { toast } from 'sonner'
 import { useClipboard } from '~/hooks/useClipboard';
 import axios from 'axios';
+import prettify from '~/helper/prettify';
 
 interface Props {
     editorValue?: string,
@@ -17,11 +18,12 @@ interface Props {
     editorProps?: EditorProps,
     resultProps?: EditorProps,
     transformer: (x: string, options?: Record<string, unknown>) => Promise<{ result: string }>
-    settingsElement?: React.ReactNode
+    editorHeaderElements?: React.ReactNode,
+    resultHeaderElements?: React.ReactNode,
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, settingsElement }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements }) => {
 
     const [value, setValue] = useState(editorValue ?? '')
     const [result, setResult] = useState<string>('');
@@ -31,13 +33,14 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
     useEffect(() => {
         if (debouncedValue === '') return setResult('');
         transformer(debouncedValue).then(async ({ result }) => {
-            if (resultLanguage !== 'json') {
-                const { data } = await axios.post("/api/pretty", { code: result, language: resultLanguage })
-                result = data.result
+            if (!['json', 'plaintext'].includes(resultLanguage)) {
+                const response = await prettify(result, resultLanguage);
+                result = response
             }
             setResult(result)
-        }).catch(() => {
-            toast('unable to tranform the code')
+        }).catch((e) => {
+            console.log(e)
+            toast.error('unable to tranform the code')
         })
 
     }, [debouncedValue, transformer, resultLanguage])
@@ -47,7 +50,7 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
             <div className='flex-1 min-w-[300px] divide-y-2 divide-gray-50/10'>
                 <div className='flex justify-between items-center h-10'>
                     {editorTitle && <h2 className='text-sm tracking-wide font-bold p-2 uppercase text-indigo-300'>{editorTitle}</h2>}
-                    {settingsElement}
+                    {editorHeaderElements}
                 </div>
                 <div className='h-[calc(100vh_-_2.5rem)]'>
                     <Editor
@@ -63,6 +66,7 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                     <div>
                         {resultTitle && <h2 className='text-sm tracking-wide font-bold p-2 uppercase text-indigo-300'>{resultTitle}</h2>}
                     </div>
+                    {resultHeaderElements}
                     <div className='flex gap-2'>
                         <button onClick={onCopy} className='bg-slate-50/20 text-sm px-2 py-1 text-slate-200 rounded shadow-md font-bold'>
                             {hasCopied ? 'Copied' : 'Copy'}

@@ -34,11 +34,11 @@ const Sidebar = () => {
                                         const isActive = pathname === page.path
                                         return (
                                             <Link href={page.path} key={page.path} className='flex flex-col justify-center'>
-                                                <div className={clsx('py-2 px-4 font-medium capitalize cursor-pointer relative hover:text-gray-200/90', {
-                                                    'text-gray-200/90': isActive,
-                                                    'text-gray-400/90': !isActive
+                                                <div className={clsx('py-2 px-4 cursor-pointer relative z-0', {
+                                                    'text-zinc-950 font-bold': isActive,
+                                                    'text-gray-400/90 font-medium hover:text-gray-200/90': !isActive
                                                 })}>
-                                                    {isActive && <motion.span layoutId="active" className='absolute inset-0 bg-zinc-50/5 hover:bg-zinc-50/5 font-extrabold shadow-lg rounded-l-full' />}
+                                                    {isActive && <motion.span layoutId="active" className='absolute inset-0 bg-white hover:bg-white font-extrabold shadow-lg rounded-l-full -z-[1]' />}
                                                     {page.label}
                                                 </div>
                                             </Link>
