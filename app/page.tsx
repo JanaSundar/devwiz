@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 import TransformPanel from '~/components/TransformPanel';
 import { Combobox } from '~/components/ui/Combobox';
 import { convertCase, stringCases } from '~/helper/string';

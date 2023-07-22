@@ -44,6 +44,7 @@
     "jsonwebtoken": "^9.0.1",
     "lucide-react": "^0.263.0",
     "marked": "^5.1.1",
+    "mixpanel-browser": "^2.47.0",
     "monaco-themes": "^0.4.4",
     "next": "13.4.9",
     "postcss": "8.4.25",
@@ -52,9 +53,9 @@
     "react": "18.2.0",
     "react-diff-viewer": "^3.1.1",
     "react-dom": "18.2.0",
+    "react-hot-toast": "^2.4.1",
     "react-markdown": "^8.0.7",
     "react-resizable-panels": "^0.0.54",
-    "sonner": "^0.6.2",
     "tailwind-merge": "^1.13.2",
     "tailwindcss": "3.3.2",
     "tailwindcss-animate": "^1.0.6",
@@ -69,6 +70,7 @@
     "@types/htmltojsx": "^0.0.30",
     "@types/js-yaml": "^4.0.5",
     "@types/marked": "^5.0.1",
+    "@types/mixpanel-browser": "^2.47.1",
     "@types/prettier": "^2.7.3",
     "@types/turndown": "^5.0.1"
   }
