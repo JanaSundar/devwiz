@@ -1,9 +1,7 @@
+import { Metadata } from 'next'
 import './globals.css'
-import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { Toaster } from 'sonner'
-import Navbar from '~/components/Navbar'
-import Sidebar from '~/components/Sidebar'
+import BaseLayout from '~/layouts/BaseLayout'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,9 +9,30 @@ const inter = Inter({
   display: 'optional'
 })
 
-export const metadata: Metadata = {
-  title: 'DevWiz',
-  description: 'one place to find all the resources for developers',
+export const metaData: Metadata = {
+  title: 'Devwiz',
+  description: 'One place to find all the tools for developers',
+  twitter: {
+    card: 'summary_large_image',
+    creator: '@jana__sundar',
+    description: 'One place to find all the tools for developers',
+    title: 'Devwiz',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+      }
+    ]
+  },
+  openGraph: {
+    title: 'Devwiz',
+    description: 'One place to find all the tools for developers',
+    url: '/logo.png',
+    siteName: 'Devwiz',
+    locale: 'en_US',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({
@@ -24,13 +43,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <body className={`bg-zinc-950 text-white font-sans h-screen flex flex-col scroll-smooth`}>
-        <main className='flex-1'>
-          <div className='flex flex-1 h-full divide-x-2 divide-gray-50/10'>
-            <Sidebar />
-            {children}
-          </div>
-        </main>
-        <Toaster position="bottom-right" richColors />
+        <BaseLayout>
+          {children}
+        </BaseLayout>
       </body>
     </html>
   )

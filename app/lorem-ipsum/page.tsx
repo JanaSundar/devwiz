@@ -11,38 +11,35 @@ const options = ['paragraphs', 'lines', 'words', 'sentences'] as const
 const LoremIpsum = () => {
     const [selectedOption, setSelectionOption] = useState<typeof options[number]>('paragraphs');
     const [result, setResult] = useState('');
-    const [range, setRange] = useState({
-        max: 25,
-        min: 1
-    });
+    const [range, setRange] = useState(25);
 
     useEffect(() => {
         const getLoremData = (type: typeof options[number]) => {
             switch (type) {
                 case 'lines':
-                    return faker.lorem.lines({ min: range.min, max: range.max });
+                    return faker.lorem.lines({ min: range, max: range });
                 case 'paragraphs':
-                    return faker.lorem.paragraphs({ min: range.min, max: range.max });
+                    return faker.lorem.paragraphs({ min: range, max: range });
                 case 'words':
-                    return faker.lorem.words({ min: range.min, max: range.max });
+                    return faker.lorem.words({ min: range, max: range });
                 case 'sentences':
-                    return faker.lorem.sentences({ min: range.min, max: range.max });
+                    return faker.lorem.sentences({ min: range, max: range });
                 default:
-                    return faker.lorem.paragraphs({ min: range.min, max: range.max });
+                    return faker.lorem.paragraphs({ min: range, max: range });
             }
         }
 
         const result = getLoremData(selectedOption);
         setResult(result);
-    }, [selectedOption, range.min, range.max])
+    }, [selectedOption, range])
 
 
     return (
-        <div className='flex flex-col flex-1 divide-y-2 divide-gray-50/5'>
+        <div className='flex flex-col flex-1 divide-y-2 divide-gray-50/10'>
             <div className='h-12 text-sm flex items-center px-2 text-indigo-300 uppercase font-bold tracking-wide'>
                 <h2>Lorem Ipsum</h2>
             </div>
-            <div className='h-[calc(100vh_-_3rem)] flex divide-x-2 divide-gray-50/5'>
+            <div className='h-[calc(100vh_-_3rem)] flex divide-x-2 divide-gray-50/10'>
                 <div className='min-w-[250px] flex flex-col gap-3 flex-wrap p-4 justify-start items-stretch'>
                     {
                         options.map((option) => {
@@ -56,28 +53,23 @@ const LoremIpsum = () => {
                         })
                     }
                     <div className='py-4'>
-                        <h2 className='text-sm uppercase font-bold text-zinc-500/90 tracking-wider'>Content Range</h2>
+                        <div className='flex justify-between py-2 text-sm uppercase font-bold tracking-wider'>
+                            <h2 className='text-gray-400/90'>Content Range : </h2>
+                            <h3 className='text-white/90'>{range}</h3>
+                        </div>
                         <Slider
-                            defaultValue={[range.min, range.max]}
+                            defaultValue={[range]}
                             max={100}
                             step={1}
                             min={1}
-                            onValueChange={([min, max]) => {
-                                setRange({
-                                    min,
-                                    max
-                                })
+                            onValueChange={([range]) => {
+                                setRange(range)
                             }}
                             className='pt-6'
                         />
-                        <div className='flex justify-between py-6'>
-                            <h3 className='text-sm uppercase font-bold text-zinc-500/90 tracking-wider'>Min: <span className='text-white/80'>{range.min}</span></h3>
-                            <h3 className='text-sm uppercase font-bold text-zinc-500/90 tracking-wider'>Max: <span className='text-white/80'>{range.max}</span></h3>
-                        </div>
-                        <h3></h3>
                     </div>
                 </div>
-                <div className='flex-1'>
+                <div className='flex-1 min-w-[300px] h-full'>
                     <Editor
                         value={result}
                         defaultLanguage='plaintext'

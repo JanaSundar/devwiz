@@ -1,32 +1,30 @@
 'use client'
 
 import React, { FC } from 'react'
-import { EditorProps, Monaco, Editor as MonacoEditor } from '@monaco-editor/react';
+import { DiffEditorProps, Monaco, DiffEditor as MonacoDiffEditor } from '@monaco-editor/react';
 import themeData from 'monaco-themes/themes/Brilliance Dull.json'
 
-type Props = EditorProps & {
-    isReadOnly?: boolean;
+type Props = DiffEditorProps & {
     isWordWrapEnabled?: boolean;
-
 }
 
-const Editor: FC<Props> = ({ value, onChange, isReadOnly, isWordWrapEnabled, ...rest }) => {
+const DiffEditor: FC<Props> = ({ original, modified, isWordWrapEnabled, ...rest }) => {
     function handleEditorWillMount(monaco: Monaco) {
         monaco.editor.defineTheme('brilliance-dull', themeData);
     }
 
     return (
-        <MonacoEditor
-            value={value}
-            defaultLanguage="javascript"
+        <MonacoDiffEditor
+            original={original}
+            modified={modified}
             theme='brilliance-dull'
-            onChange={onChange}
             beforeMount={handleEditorWillMount}
+            language='plaintext'
             options={{
                 minimap: {
                     enabled: false
                 },
-                readOnly: isReadOnly,
+                readOnly: true,
                 lineHeight: 2,
                 scrollBeyondLastLine: 0,
                 scrollbar: {
@@ -43,4 +41,4 @@ const Editor: FC<Props> = ({ value, onChange, isReadOnly, isWordWrapEnabled, ...
     )
 }
 
-export default Editor
+export default DiffEditor
