@@ -4,7 +4,7 @@ import React, { FC, useEffect, useState } from 'react'
 import Editor from './Editor'
 import { EditorProps } from '@monaco-editor/react'
 import { useDebounce } from '~/hooks/useDebounce';
-import { toast } from 'sonner'
+import toast from 'react-hot-toast'
 import { useClipboard } from '~/hooks/useClipboard';
 import axios from 'axios';
 import prettify from '~/helper/prettify';
@@ -39,7 +39,6 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
             }
             setResult(result)
         }).catch((e) => {
-            console.log(e)
             toast.error('unable to tranform the code')
         })
 

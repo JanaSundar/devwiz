@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
 import './globals.css'
 import { Inter } from 'next/font/google'
-import BaseLayout from '~/layouts/BaseLayout'
+import Sidebar from '~/components/Sidebar'
+import { Toaster } from 'react-hot-toast'
+import Analytics from '~/components/Analytics'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -9,7 +11,7 @@ const inter = Inter({
   display: 'optional'
 })
 
-export const metaData: Metadata = {
+export const metadata: Metadata = {
   title: 'Devwiz',
   description: 'One place to find all the tools for developers',
   twitter: {
@@ -19,7 +21,7 @@ export const metaData: Metadata = {
     title: 'Devwiz',
     images: [
       {
-        url: '/logo.png',
+        url: 'https://www.devwiz.xyz/logo.png',
         width: 1200,
         height: 630,
       }
@@ -28,7 +30,7 @@ export const metaData: Metadata = {
   openGraph: {
     title: 'Devwiz',
     description: 'One place to find all the tools for developers',
-    url: '/logo.png',
+    url: 'https://www.devwiz.xyz/logo.png',
     siteName: 'Devwiz',
     locale: 'en_US',
     type: 'website',
@@ -43,9 +45,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <body className={`bg-zinc-950 text-white font-sans h-screen flex flex-col scroll-smooth`}>
-        <BaseLayout>
+        <main className='flex-1 flex h-full divide-x-2 divide-gray-50/10'>
+          <Sidebar />
           {children}
-        </BaseLayout>
+        </main>
+        <Toaster position="bottom-right" toastOptions={{
+          duration: 2000,
+        }} />
+        <Analytics />
       </body>
     </html>
   )
