@@ -14,7 +14,7 @@ const nextConfig = {
 // https://securityheaders.com
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.youtube.com *.twitter.com *.vercel-scripts.com *.vercel-insights.com *.jsdelivr.net;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.youtube.com *.twitter.com *.vercel-scripts.com *.vercel-insights.com *.jsdelivr.net *.mixpanel.com;
   child-src 'self' *.youtube.com *.google.com *.twitter.com *.jsdelivr.net;
   frame-src *.codesandbox.io *.jsdelivr.net;
   style-src 'self' 'unsafe-inline' *.jsdelivr.net;
