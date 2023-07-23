@@ -35,7 +35,7 @@ const Sidebar = () => {
                                         return (
                                             <Link href={page.path} key={page.path} className='flex flex-col justify-center'>
                                                 <div className={clsx('py-2 px-4 cursor-pointer relative z-0', {
-                                                    'font-bold mix-blend-difference': isActive,
+                                                    'font-bold': isActive,
                                                     'text-gray-400/90 font-medium hover:text-gray-200/90': !isActive
                                                 })}>
                                                     {isActive && <motion.span layoutId="active" className='absolute inset-0 bg-white hover:bg-white font-extrabold shadow-lg rounded-l-full z-10 mix-blend-difference' />}
