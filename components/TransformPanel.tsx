@@ -20,10 +20,11 @@ interface Props {
     transformer: (x: string, options?: Record<string, unknown>) => Promise<{ result: string }>
     editorHeaderElements?: React.ReactNode,
     resultHeaderElements?: React.ReactNode,
+    isLoadingEnabled?: boolean;
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isLoadingEnabled = true }) => {
 
     const [value, setValue] = useState(editorValue ?? '')
     const [result, setResult] = useState<string>('');
@@ -32,17 +33,23 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
 
     useEffect(() => {
         if (debouncedValue === '') return setResult('');
+        let toastId: string | undefined = undefined;
+        if (isLoadingEnabled) {
+            toastId = toast.loading('Transforming the code', { duration: 10000 })
+        }
         transformer(debouncedValue).then(async ({ result }) => {
             if (!['json', 'plaintext'].includes(resultLanguage)) {
                 const response = await prettify(result, resultLanguage);
                 result = response
             }
             setResult(result)
-        }).catch((e) => {
-            toast.error('unable to tranform the code')
+            if (toastId)
+                toast.success('Code transformed', { id: toastId, duration: 2000 })
+        }).catch(() => {
+            toast.error('unable to tranform the code', { id: toastId, duration: 2000 })
         })
 
-    }, [debouncedValue, transformer, resultLanguage])
+    }, [debouncedValue, transformer, resultLanguage, isLoadingEnabled])
 
     return (
         <>
