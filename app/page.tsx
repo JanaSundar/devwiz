@@ -40,6 +40,6 @@ export default function Home() {
       }).join('\n')
 
       return { result }
-    }} />
+    }} isLoadingEnabled={false} />
   )
 }
