@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react'
 import mixpanel from 'mixpanel-browser'
+import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 
 const Analytics = () => {
     useEffect(() => {
@@ -12,7 +13,7 @@ const Analytics = () => {
             })
         }
     }, [])
-    return null
+    return <VercelAnalytics  />
 }
 
 export default Analytics
