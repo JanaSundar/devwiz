@@ -8,10 +8,11 @@ const plugins = [
     require("prettier/plugins/markdown"),
     require("prettier/plugins/yaml"),
     require("prettier/plugins/estree"),
+    require("prettier/plugins/postcss"),
 ]
 
 
-export default async function prettify (code: string, language: string) {
+export default async function prettify(code: string, language: string) {
     const result = await prettier.format(code, {
         semi: false,
         plugins,
