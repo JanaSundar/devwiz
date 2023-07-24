@@ -28,7 +28,7 @@ const Sidebar = () => {
                     {routes.map((route) => {
                         return (
                             <div key={route.category}>
-                                <h3 className='text-sm uppercase text-indigo-300 font-bold tracking-wider py-2 '>{route.category}</h3>
+                                <h3 className='text-sm uppercase text-indigo-300 font-bold tracking-wider pt-4 pb-2'>{route.category}</h3>
                                 {
                                     route.content.map((page) => {
                                         const isActive = pathname === page.path

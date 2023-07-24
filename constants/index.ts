@@ -8,10 +8,10 @@ export const routes = [
                 path: '/',
                 label: 'String Case Converter',
             },
-            // {
-            //     path: '/color-converter',
-            //     label: 'Color Converter',
-            // }
+            {
+                path: '/color-converter',
+                label: 'Color Converter',
+            }
         ]
     },
     {
@@ -40,6 +40,10 @@ export const routes = [
             {
                 path: '/html-to-markdown',
                 label: 'HTML to Markdown',
+            },
+            {
+                path: 'css-to-tailwind',
+                label: 'CSS to TailwindCSS',
             }
         ]
     },
