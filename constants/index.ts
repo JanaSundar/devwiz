@@ -69,16 +69,16 @@ export const routes = [
         ]
     },
     {
-        category: 'Url',
+        category: 'Encode / Decode',
         content: [
             {
-                path: '/url-encode-decode',
-                label: 'Encode / Decode',
+                path: '/url',
+                label: 'URL',
             },
-            // {
-            //     path: '/parse-url',
-            //     label: 'Parse',
-            // }
+            {
+                path: '/base64',
+                label: 'Base64',
+            }
         ]
     },
     {
