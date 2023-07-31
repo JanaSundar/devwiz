@@ -46,7 +46,7 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
             if (toastId)
                 toast.success('Code transformed', { id: toastId, duration: 2000 })
         }).catch(() => {
-            toast.error('unable to tranform the code', { id: toastId, duration: 2000 })
+            toast.error('unable to transform the code', { id: toastId, duration: 2000 })
         })
 
     }, [debouncedValue, transformer, resultLanguage, isLoadingEnabled])
