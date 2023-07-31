@@ -35,7 +35,7 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
         if (debouncedValue === '') return setResult('');
         let toastId: string | undefined = undefined;
         if (isLoadingEnabled) {
-            toastId = toast.loading('Transforming the code', { duration: 10000 })
+            toastId = toast.loading('Transforming the code', { duration: 2000 })
         }
         transformer(debouncedValue).then(async ({ result }) => {
             if (!['json', 'plaintext'].includes(resultLanguage)) {
