@@ -14,6 +14,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Devwiz',
   description: 'One place to find all the tools for developers',
+  metadataBase: new URL('https://devwiz.xyz'),
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+  },
   twitter: {
     card: 'summary_large_image',
     creator: '@jana__sundar',
