@@ -30,6 +30,10 @@ export const routes = [
                 label: 'JSON to YAML',
             },
             {
+                path: '/json-to-ts',
+                label: 'JSON to TS',
+            },
+            {
                 path: '/yaml-to-json',
                 label: 'YAML to JSON',
             },
