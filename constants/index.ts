@@ -46,7 +46,7 @@ export const routes = [
                 label: 'HTML to Markdown',
             },
             {
-                path: 'css-to-tailwind',
+                path: '/css-to-tailwind',
                 label: 'CSS to TailwindCSS',
             }
         ]
