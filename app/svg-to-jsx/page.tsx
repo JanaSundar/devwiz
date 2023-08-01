@@ -3,6 +3,7 @@
 import axios from 'axios';
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const SvgToJsx = () => {
     return (
@@ -18,6 +19,7 @@ const SvgToJsx = () => {
                 })
                 return data
             }}
+            defaultEditorValue={DEFAULT_VALUES.svg}
         />
     )
 }

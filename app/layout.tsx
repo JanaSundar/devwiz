@@ -55,7 +55,7 @@ export default function RootLayout({
           <Sidebar />
           {children}
         </main>
-        <Toaster position="bottom-right" toastOptions={{
+        <Toaster position="top-right" toastOptions={{
           duration: 2000,
         }} />
         <Analytics />

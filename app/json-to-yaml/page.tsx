@@ -3,6 +3,7 @@
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel'
 import YAML from 'json-to-pretty-yaml'
+import { DEFAULT_VALUES } from '~/constants/defaultValues'
 
 const JsonToYaml = () => {
     return (
@@ -15,8 +16,7 @@ const JsonToYaml = () => {
             }}
             editorTitle='JSON'
             resultTitle='YAML'
-
-
+            defaultEditorValue={DEFAULT_VALUES.json}
         />
     )
 }

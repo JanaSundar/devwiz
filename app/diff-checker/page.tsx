@@ -6,10 +6,11 @@ import ReactDiffViewer from 'react-diff-viewer';
 import DiffEditor from '~/components/DiffEditor';
 import Editor from '~/components/Editor';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const DiffChecker = () => {
-    const [oldValue, setOldValue] = React.useState('')
-    const [newValue, setNewValue] = React.useState('')
+    const [oldValue, setOldValue] = React.useState(DEFAULT_VALUES.diffCheckerOriginal)
+    const [newValue, setNewValue] = React.useState(DEFAULT_VALUES.diffCheckerModified)
 
     return (
         <div className='flex flex-col flex-1 divide-y-2 divide-gray-50/10'>

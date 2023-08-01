@@ -4,6 +4,7 @@ import React from 'react'
 import TransformPanel from '~/components/TransformPanel'
 import { marked } from 'marked';
 import Purify from 'dompurify'
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const MarkdownToHtml = () => {
     return (
@@ -16,8 +17,7 @@ const MarkdownToHtml = () => {
             }}
             editorTitle='MARKDOWN'
             resultTitle='HTML'
-
-
+            defaultEditorValue={DEFAULT_VALUES.markdown}
         />
     )
 }
