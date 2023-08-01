@@ -3,6 +3,7 @@
 import axios from 'axios';
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const JsToJson = () => {
     return (
@@ -19,6 +20,7 @@ const JsToJson = () => {
                     res({ result });
                 })
             }}
+            defaultEditorValue={DEFAULT_VALUES.js}
         />
     )
 }

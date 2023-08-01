@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import TransformPanel from '~/components/TransformPanel';
 import { Combobox } from '~/components/ui/Combobox';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 import { convertCase, stringCases } from '~/helper/string';
 
 interface Props {
@@ -40,6 +41,6 @@ export default function Home() {
       }).join('\n')
 
       return { result }
-    }} isLoadingEnabled={false} />
+    }} defaultEditorValue={DEFAULT_VALUES.stringCaseConverter} />
   )
 }

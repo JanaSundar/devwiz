@@ -3,6 +3,7 @@
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel';
 import svgToDataUri from 'mini-svg-data-uri';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const SvgToJsx = () => {
     return (
@@ -16,6 +17,7 @@ const SvgToJsx = () => {
                 const result = svgToDataUri(value)
                 return { result }
             }}
+            defaultEditorValue={DEFAULT_VALUES.svg}
         />
     )
 }

@@ -1,12 +1,11 @@
 'use client'
 
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect, useRef, useState } from 'react'
 import Editor from './Editor'
 import { EditorProps } from '@monaco-editor/react'
 import { useDebounce } from '~/hooks/useDebounce';
 import toast from 'react-hot-toast'
 import { useClipboard } from '~/hooks/useClipboard';
-import axios from 'axios';
 import prettify from '~/helper/prettify';
 
 interface Props {
@@ -20,24 +19,22 @@ interface Props {
     transformer: (x: string, options?: Record<string, unknown>) => Promise<{ result: string }>
     editorHeaderElements?: React.ReactNode,
     resultHeaderElements?: React.ReactNode,
-    isLoadingEnabled?: boolean;
     isWordWrapEnabled?: boolean;
+    defaultEditorValue?: string;
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isLoadingEnabled = true, isWordWrapEnabled = false }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue }) => {
 
-    const [value, setValue] = useState(editorValue ?? '')
+    const [value, setValue] = useState((defaultEditorValue || editorValue) ?? '')
     const [result, setResult] = useState<string>('');
-    const debouncedValue = useDebounce(value, 250)
+    const debouncedValue = useDebounce(value, 500)
     const { hasCopied, onCopy } = useClipboard(result)
-
+    const toastId = useRef<string | undefined>()
     useEffect(() => {
+        if (toastId.current) toast.dismiss(toastId.current);
         if (debouncedValue === '') return setResult('');
-        let toastId: string | undefined = undefined;
-        if (isLoadingEnabled) {
-            toastId = toast.loading('Transforming the code', { duration: 2000 })
-        }
+        toastId.current = toast.loading('Transforming the code', { duration: 2000 })
         transformer(debouncedValue).then(async ({ result }) => {
             if (!['json', 'plaintext'].includes(resultLanguage)) {
                 const response = await prettify(result, resultLanguage);
@@ -45,12 +42,12 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
             }
             setResult(result)
             if (toastId)
-                toast.success('Code transformed', { id: toastId, duration: 2000 })
+                toast.success('Code transformed', { id: toastId.current, duration: 2000 })
         }).catch(() => {
-            toast.error('unable to transform the code', { id: toastId, duration: 2000 })
+            toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
         })
 
-    }, [debouncedValue, transformer, resultLanguage, isLoadingEnabled])
+    }, [debouncedValue, transformer, resultLanguage])
 
     return (
         <>

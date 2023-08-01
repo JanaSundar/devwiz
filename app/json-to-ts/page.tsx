@@ -3,6 +3,7 @@
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel';
 import axios from 'axios';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const JsonToTS = () => {
     return (
@@ -15,6 +16,7 @@ const JsonToTS = () => {
                 const { data } = await axios.post('/api/json2ts', { json: value })
                 return { result: data.result }
             }}
+            defaultEditorValue={DEFAULT_VALUES.json}
         />
     )
 }

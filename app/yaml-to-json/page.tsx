@@ -3,6 +3,7 @@
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel'
 import YAML from 'js-yaml';
+import { DEFAULT_VALUES } from '~/constants/defaultValues';
 
 const YamlToJson = () => {
     return (
@@ -15,6 +16,7 @@ const YamlToJson = () => {
             }}
             editorTitle='YAML'
             resultTitle='JSON'
+            defaultEditorValue={DEFAULT_VALUES.yaml}
         />
     )
 }

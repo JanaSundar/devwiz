@@ -3,6 +3,7 @@
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel'
 import { TailwindConverter } from 'css-to-tailwindcss'
+import { DEFAULT_VALUES } from '~/constants/defaultValues'
 
 const CSSToTailwind = () => {
     return (
@@ -16,6 +17,7 @@ const CSSToTailwind = () => {
                 const { convertedRoot } = await converter.convertCSS(value)
                 return { result: convertedRoot.toString() }
             }}
+            defaultEditorValue={DEFAULT_VALUES.css}
         />
     )
 }
