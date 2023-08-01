@@ -21,10 +21,11 @@ interface Props {
     editorHeaderElements?: React.ReactNode,
     resultHeaderElements?: React.ReactNode,
     isLoadingEnabled?: boolean;
+    isWordWrapEnabled?: boolean;
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isLoadingEnabled = true }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isLoadingEnabled = true, isWordWrapEnabled = false }) => {
 
     const [value, setValue] = useState(editorValue ?? '')
     const [result, setResult] = useState<string>('');
@@ -84,6 +85,7 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                         value={result}
                         defaultLanguage={resultLanguage}
                         isReadOnly
+                        isWordWrapEnabled={isWordWrapEnabled}
                         {...resultProps}
                     />
                 </div>

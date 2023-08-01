@@ -22,6 +22,10 @@ export const routes = [
                 label: 'SVG to JSX',
             },
             {
+                path: '/svg-to-datauri',
+                label: 'SVG to Data URI',
+            },
+            {
                 path: '/js-to-json',
                 label: 'JS to JSON',
             },

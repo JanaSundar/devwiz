@@ -47,6 +47,7 @@
     "jsonwebtoken": "^9.0.1",
     "lucide-react": "^0.263.0",
     "marked": "^5.1.1",
+    "mini-svg-data-uri": "^1.4.4",
     "mixpanel-browser": "^2.47.0",
     "monaco-themes": "^0.4.4",
     "next": "13.4.9",
