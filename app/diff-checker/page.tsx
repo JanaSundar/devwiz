@@ -1,8 +1,6 @@
 'use client'
 
 import React from 'react'
-import { Textarea } from '~/components/ui/textarea'
-import ReactDiffViewer from 'react-diff-viewer';
 import DiffEditor from '~/components/DiffEditor';
 import Editor from '~/components/Editor';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
