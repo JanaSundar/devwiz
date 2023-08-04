@@ -1,9 +1,17 @@
 export function setDataToLocalstorage<T>(key: string, data: T) {
-    localStorage.setItem(key, JSON.stringify(data));
+    if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    return null
 }
 
 
 export function getDataFromLocalstorage<T>(key: string): T | null {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    if (typeof window !== 'undefined') {
+        const data = window.localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    }
+
+    return null;
 }
