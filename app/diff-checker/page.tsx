@@ -7,10 +7,19 @@ import DiffEditor from '~/components/DiffEditor';
 import Editor from '~/components/Editor';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { DEFAULT_VALUES } from '~/constants/defaultValues';
+import { getDataFromLocalstorage, setDataToLocalstorage } from '~/helper/persist';
+import { usePathname } from 'next/navigation';
 
 const DiffChecker = () => {
-    const [oldValue, setOldValue] = React.useState(DEFAULT_VALUES.diffCheckerOriginal)
-    const [newValue, setNewValue] = React.useState(DEFAULT_VALUES.diffCheckerModified)
+    const pathname = usePathname();
+    const [oldValue, setOldValue] = React.useState(() => {
+        const preloadedValue = getDataFromLocalstorage<string>(`${pathname}-old`)
+        return preloadedValue || DEFAULT_VALUES.diffCheckerOriginal
+    })
+    const [newValue, setNewValue] = React.useState(() => {
+        const preloadedValue = getDataFromLocalstorage<string>(`${pathname}-new`)
+        return preloadedValue || DEFAULT_VALUES.diffCheckerModified
+    })
 
     return (
         <div className='flex flex-col flex-1 divide-y-2 divide-gray-50/10'>
@@ -24,13 +33,19 @@ const DiffChecker = () => {
                             <div className='h-12 flex items-center p-4 text-sm font-bold uppercase tracking-wider'>
                                 <h2 className='text-gray-400/90'>Original value</h2>
                             </div>
-                            <Editor className='flex-1' value={oldValue} onChange={v => setOldValue(v!)} />
+                            <Editor className='flex-1' value={oldValue} onChange={v => {
+                                setOldValue(v!)
+                                setDataToLocalstorage(`${pathname}-old`, v!)
+                            }} />
                         </div>
                         <div className='flex flex-1 flex-col divide-y-2 divide-gray-50/10'>
                             <div className='h-12 flex items-center p-4 text-sm font-bold uppercase tracking-wider'>
                                 <h2 className='text-gray-400/90'>Modified Value</h2>
                             </div>
-                            <Editor className='flex-1' value={newValue} onChange={v => setNewValue(v!)} />
+                            <Editor className='flex-1' value={newValue} onChange={v => {
+                                setNewValue(v!)
+                                setDataToLocalstorage(`${pathname}-new`, v!)
+                            }} />
                         </div>
                     </div>
                 </Panel>

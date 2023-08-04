@@ -1,13 +1,27 @@
 'use client'
 
+import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import Editor from '~/components/Editor'
+import { getDataFromLocalstorage, setDataToLocalstorage } from '~/helper/persist';
 
 const UrlEncodeDecode = () => {
-    const [value, setValue] = useState('');
+    const pathname = usePathname();
+    const [value, setValue] = useState(() => {
+        const preloadedValue = getDataFromLocalstorage<string>(pathname)
+        return preloadedValue || ''
+    });
 
-    const decodeUrl = () => setValue(decodeURIComponent(value));
-    const encodeUrl = () => setValue(encodeURIComponent(value));
+    const decodeUrl = () => {
+        const newValue = decodeURIComponent(value)
+        setDataToLocalstorage(pathname, newValue);
+        setValue(newValue)
+    };
+    const encodeUrl = () => {
+        const newValue = encodeURIComponent(value)
+        setDataToLocalstorage(pathname, newValue);
+        setValue(newValue)
+    };
 
     return (
         <div className='flex flex-col flex-1 divide-y-2 divide-gray-50/10'>

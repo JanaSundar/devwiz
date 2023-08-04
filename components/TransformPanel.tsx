@@ -7,6 +7,8 @@ import { useDebounce } from '~/hooks/useDebounce';
 import toast from 'react-hot-toast'
 import { useClipboard } from '~/hooks/useClipboard';
 import prettify from '~/helper/prettify';
+import { getDataFromLocalstorage, setDataToLocalstorage } from '~/helper/persist';
+import { usePathname } from 'next/navigation';
 
 interface Props {
     editorValue?: string,
@@ -25,8 +27,11 @@ interface Props {
 
 
 const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue }) => {
-
-    const [value, setValue] = useState((defaultEditorValue || editorValue) ?? '')
+    const pathname = usePathname();
+    const [value, setValue] = useState(() => {
+        const preloadedValue = getDataFromLocalstorage<string>(pathname)
+        return (preloadedValue || defaultEditorValue || editorValue) ?? ''
+    })
     const [result, setResult] = useState<string>('');
     const debouncedValue = useDebounce(value, 500)
     const { hasCopied, onCopy } = useClipboard(result)
@@ -41,13 +46,14 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                 result = response
             }
             setResult(result)
+            setDataToLocalstorage(pathname, debouncedValue);
             if (toastId)
                 toast.success('Code transformed', { id: toastId.current, duration: 2000 })
         }).catch(() => {
             toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
         })
 
-    }, [debouncedValue, transformer, resultLanguage])
+    }, [debouncedValue, transformer, resultLanguage, pathname])
 
     return (
         <>
