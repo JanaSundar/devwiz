@@ -24,10 +24,11 @@ interface Props {
     isWordWrapEnabled?: boolean;
     defaultEditorValue?: string;
     render?: ({ result }: { result: string }) => React.ReactNode;
+    prettifyResult?: boolean;
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue, render }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue, render, prettifyResult = true }) => {
     const pathname = usePathname();
     const [value, setValue] = useState(() => {
         const preloadedValue = getDataFromLocalstorage<string>(pathname)
@@ -42,21 +43,20 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
         if (debouncedValue === '') return setResult('');
         toastId.current = toast.loading('Transforming the code', { duration: 2000 })
         transformer(debouncedValue).then(async ({ result }) => {
-            if (!['plaintext'].includes(resultLanguage)) {
-                if(resultLanguage.toLowerCase() === 'json') result = JSON.parse(result)
+            if ((!['plaintext'].includes(resultLanguage)) && prettifyResult) {
+                if (resultLanguage.toLowerCase() === 'json') result = JSON.parse(result)
                 const response = await prettify(result, resultLanguage);
                 result = response
             }
             setResult(result)
-            setDataToLocalstorage(pathname, debouncedValue);
+            setDataToLocalstorage(pathname, result);
             if (toastId)
                 toast.success('Code transformed', { id: toastId.current, duration: 2000 })
-        }).catch((er) => {
-            console.log
+        }).catch(() => {
             toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
         })
 
-    }, [debouncedValue, transformer, resultLanguage, pathname])
+    }, [debouncedValue, transformer, resultLanguage, pathname, prettifyResult])
 
     return (
         <>
