@@ -26,7 +26,6 @@ const DiffEditor: FC<Props> = ({ original, modified, isWordWrapEnabled, ...rest 
                 },
                 readOnly: true,
                 lineHeight: 2,
-                scrollBeyondLastLine: 0,
                 scrollbar: {
                     horizontal: 'hidden',
                 },

@@ -13,7 +13,7 @@ import Tilt from 'react-parallax-tilt';
 import { Button } from '~/components/ui/button';
 
 const QRCode = () => {
-    const [value, setValue] = useState('');
+    const [value, setValue] = useState('Enter your text here to generate QR code');
     const debouncedValue = useDebounce(value, 500);
     const [qrIncludesImage, setQrIncludesImage] = useState(false);
     const [backgroundColor, setBackgroundColor] = useState("#ffffff");
