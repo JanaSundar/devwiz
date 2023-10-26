@@ -18,6 +18,7 @@ export default async function prettify(code: string, language: string) {
         plugins,
         parser: ['js', 'javascript'].includes(language) ? 'babel' : language,
         jsxSingleQuote: true,
+        trailingComma: 'all'
     })
 
     return result

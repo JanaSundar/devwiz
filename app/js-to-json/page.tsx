@@ -4,6 +4,7 @@ import axios from 'axios';
 import React from 'react'
 import TransformPanel from '~/components/TransformPanel';
 import { DEFAULT_VALUES } from '~/constants/defaultValues';
+import { isJSONSafe } from '~/helper/jsonUtils';
 
 const JsToJson = () => {
     return (
@@ -13,11 +14,10 @@ const JsToJson = () => {
             editorLanguage='javascript'
             resultLanguage='json'
             transformer={(value) => {
-                return new Promise(res => {
-                    const result = JSON.stringify(
-                        JSON.parse(JSON.stringify(eval("(" + value + ")"), null, 2)),
-                        null, 4)
-                    res({ result });
+                return new Promise((resolve, reject) => {
+                    if (!isJSONSafe(value)) return reject('Error occured');
+                    const result = JSON.stringify(value , null, 4)
+                    resolve({ result });
                 })
             }}
             defaultEditorValue={DEFAULT_VALUES.js}

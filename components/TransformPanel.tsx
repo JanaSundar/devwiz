@@ -23,10 +23,11 @@ interface Props {
     resultHeaderElements?: React.ReactNode,
     isWordWrapEnabled?: boolean;
     defaultEditorValue?: string;
+    render?: ({ result }: { result: string }) => React.ReactNode;
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue, render }) => {
     const pathname = usePathname();
     const [value, setValue] = useState(() => {
         const preloadedValue = getDataFromLocalstorage<string>(pathname)
@@ -41,7 +42,8 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
         if (debouncedValue === '') return setResult('');
         toastId.current = toast.loading('Transforming the code', { duration: 2000 })
         transformer(debouncedValue).then(async ({ result }) => {
-            if (!['json', 'plaintext'].includes(resultLanguage)) {
+            if (!['plaintext'].includes(resultLanguage)) {
+                if(resultLanguage.toLowerCase() === 'json') result = JSON.parse(result)
                 const response = await prettify(result, resultLanguage);
                 result = response
             }
@@ -49,7 +51,8 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
             setDataToLocalstorage(pathname, debouncedValue);
             if (toastId)
                 toast.success('Code transformed', { id: toastId.current, duration: 2000 })
-        }).catch(() => {
+        }).catch((er) => {
+            console.log
             toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
         })
 
@@ -84,13 +87,15 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                     </div>
                 </div>
                 <div className='h-[calc(100vh_-_2.5rem)]'>
-                    <Editor
-                        value={result}
-                        defaultLanguage={resultLanguage}
-                        isReadOnly
-                        isWordWrapEnabled={isWordWrapEnabled}
-                        {...resultProps}
-                    />
+                    {
+                        render ? render({ result }) : <Editor
+                            value={result}
+                            defaultLanguage={resultLanguage}
+                            isReadOnly
+                            isWordWrapEnabled={isWordWrapEnabled}
+                            {...resultProps}
+                        />
+                    }
                 </div>
             </div>
         </>
