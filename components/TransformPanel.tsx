@@ -9,6 +9,7 @@ import { useClipboard } from '~/hooks/useClipboard';
 import prettify from '~/helper/prettify';
 import { getDataFromLocalstorage, setDataToLocalstorage } from '~/helper/persist';
 import { usePathname } from 'next/navigation';
+import { Button } from './ui/button';
 
 interface Props {
     editorValue?: string,
@@ -25,10 +26,12 @@ interface Props {
     defaultEditorValue?: string;
     render?: ({ result }: { result: string }) => React.ReactNode;
     prettifyResult?: boolean;
+    showPrettifyButton?: boolean;
+    prettifyLanguage?: string;
 }
 
 
-const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue, render, prettifyResult = true }) => {
+const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, transformer, editorLanguage, resultLanguage, resultProps = {}, editorProps = {}, editorHeaderElements, resultHeaderElements, isWordWrapEnabled = false, defaultEditorValue, render, prettifyResult = true, showPrettifyButton = true, prettifyLanguage }) => {
     const pathname = usePathname();
     const [value, setValue] = useState(() => {
         const preloadedValue = getDataFromLocalstorage<string>(pathname)
@@ -49,10 +52,11 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                 result = response
             }
             setResult(result)
-            setDataToLocalstorage(pathname, result);
+            setDataToLocalstorage(pathname, debouncedValue);
             if (toastId)
                 toast.success('Code transformed', { id: toastId.current, duration: 2000 })
-        }).catch(() => {
+        }).catch((err) => {
+            console.log('error', err)
             toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
         })
 
@@ -63,7 +67,14 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
             <div className='flex-1 min-w-[300px] divide-y-2 divide-gray-50/10'>
                 <div className='flex justify-between items-center h-10'>
                     {editorTitle && <h2 className='text-sm tracking-wide font-bold p-2 uppercase text-indigo-300'>{editorTitle}</h2>}
-                    {editorHeaderElements}
+                    <div className='flex gap-2'>
+                        {showPrettifyButton && <Button className='bg-transparent py-1 px-4 hover:bg-transparent ring-1 ring-gray-500' onClick={async () => {
+                            if(editorLanguage.toLowerCase() === 'plaintext') return;
+                            let input = value;
+                            setValue(await prettify(input, prettifyLanguage ?? editorLanguage))
+                        }}>Prettify</Button>}
+                        {editorHeaderElements}
+                    </div>
                 </div>
                 <div className='h-[calc(100vh_-_2.5rem)]'>
                     <Editor

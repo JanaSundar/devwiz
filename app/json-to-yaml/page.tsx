@@ -17,6 +17,7 @@ const JsonToYaml = () => {
             editorTitle='JSON'
             resultTitle='YAML'
             defaultEditorValue={DEFAULT_VALUES.json}
+            prettifyResult={false}
         />
     )
 }

@@ -11,12 +11,25 @@ const plugins = [
     require("prettier/plugins/postcss"),
 ]
 
+const languages: Record<string, string> = {
+    html: 'html',
+    css: 'css',
+    js: 'babel',
+    ts: 'typescript',
+    typescript: 'typescript',
+    json: 'json',
+    md: 'markdown',
+    yaml: 'yaml',
+    svg: 'html',
+    'javascript': 'babel',
+}
+
 
 export default async function prettify(code: string, language: string) {
     const result = await prettier.format(code, {
         semi: false,
         plugins,
-        parser: ['js', 'javascript'].includes(language) ? 'babel' : language,
+        parser: languages[language] ?? language,
         jsxSingleQuote: true,
         trailingComma: 'all'
     })

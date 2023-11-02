@@ -35,7 +35,7 @@ dash-case
                 }
             }
         }
-    }, null, 2),
+    }, null, 4),
     yaml: `---
 # A sample yaml file
 company: spacelift

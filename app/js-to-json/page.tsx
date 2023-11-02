@@ -21,6 +21,7 @@ const JsToJson = () => {
                 })
             }}
             defaultEditorValue={DEFAULT_VALUES.js}
+            prettifyLanguage='json'
         />
     )
 }

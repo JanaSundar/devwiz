@@ -41,6 +41,6 @@ export default function Home() {
       }).join('\n')
 
       return { result }
-    }} defaultEditorValue={DEFAULT_VALUES.stringCaseConverter} />
+    }} defaultEditorValue={DEFAULT_VALUES.stringCaseConverter} showPrettifyButton={false} />
   )
 }
