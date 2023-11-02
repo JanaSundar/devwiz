@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Logo from './Svg/Logo'
 import Link from 'next/link'
 import Github from './Svg/Github'
@@ -9,9 +9,17 @@ import { routes } from '~/constants'
 import clsx from 'clsx'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getDataFromLocalstorage, setDataToLocalstorage } from '~/helper/persist'
+import packageJson from "~/package.json"
 
 const Sidebar = () => {
     const pathname = usePathname();
+    useEffect(() => {
+        if(getDataFromLocalstorage('currentVersion') !== packageJson.version) {
+            localStorage.clear()
+            setDataToLocalstorage('currentVersion', packageJson.version)
+        }
+    }, [])
 
     return (
         <div className='flex flex-col pl-4 bg-zinc-950 min-w-[300px]'>
