@@ -97,7 +97,7 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                         </button>
                     </div>
                 </div>
-                <div className='h-[calc(100vh_-_2.5rem)]'>
+                <div className='h-[calc(100vh_-_2.5rem)] overflow-y-auto'>
                     {
                         render ? render({ result }) : <Editor
                             value={result}
