@@ -9,15 +9,14 @@ import { routes } from '~/constants'
 import clsx from 'clsx'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getDataFromLocalstorage, setDataToLocalstorage } from '~/helper/persist'
 import packageJson from "~/package.json"
 
 const Sidebar = () => {
     const pathname = usePathname();
     useEffect(() => {
-        if(getDataFromLocalstorage('currentVersion') !== packageJson.version) {
+        if(window.localStorage.getItem('currentVersion') !== packageJson.version) {
             localStorage.clear()
-            setDataToLocalstorage('currentVersion', packageJson.version)
+            window.localStorage.setItem('currentVersion', packageJson.version)
         }
     }, [])
 
