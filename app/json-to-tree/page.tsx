@@ -4,9 +4,11 @@ import React from 'react'
 import TransformPanel from '~/components/TransformPanel'
 import { DEFAULT_VALUES } from '~/constants/defaultValues'
 import { isJSONSafe } from '~/helper/jsonUtils';
-import JSONEditorReact from '~/components/JsonEditor';
+import dynamic from 'next/dynamic';
 import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
 import styles from "./style.module.css"
+
+const JSONEditorReact = dynamic(() => import('~/components/JsonEditor'), { ssr: false });
 
 const JSONToTreeView = () => {
   const parseData = (data: any) => {
