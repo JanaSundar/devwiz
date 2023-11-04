@@ -42,25 +42,28 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
     const { hasCopied, onCopy } = useClipboard(result)
     const toastId = useRef<string | undefined>()
     useEffect(() => {
-        if (toastId.current) toast.dismiss(toastId.current);
-        if (debouncedValue === '') return setResult('');
-        toastId.current = toast.loading('Transforming the code', { duration: 2000 })
-        transformer(debouncedValue).then(async ({ result }) => {
-            if ((!['plaintext'].includes(resultLanguage)) && prettifyResult) {
-                if (resultLanguage.toLowerCase() === 'json') result = JSON.parse(result)
-                const response = await prettify(result, resultLanguage);
-                result = response
-            }
-            setResult(result)
-            setDataToLocalstorage(pathname, debouncedValue);
-            if (toastId)
-                toast.success('Code transformed', { id: toastId.current, duration: 2000 })
-        }).catch((err) => {
-            console.log('error', err)
-            toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
-        })
-
-    }, [debouncedValue, transformer, resultLanguage, pathname, prettifyResult])
+        function transform() {
+            if (toastId.current) toast.dismiss(toastId.current);
+            if (debouncedValue === '') return setResult('');
+            toastId.current = toast.loading('Transforming the code', { duration: 2000 })
+            transformer(debouncedValue).then(async ({ result }) => {
+                if ((!['plaintext'].includes(resultLanguage)) && prettifyResult) {
+                    if (resultLanguage.toLowerCase() === 'json') result = JSON.parse(result)
+                    const response = await prettify(result, resultLanguage);
+                    result = response
+                }
+                setResult(result)
+                setDataToLocalstorage(pathname, debouncedValue);
+                if (toastId)
+                    toast.success('Code transformed', { id: toastId.current, duration: 2000 })
+            }).catch((err) => {
+                console.log('error', err)
+                toast.error('unable to transform the code', { id: toastId.current, duration: 2000 })
+            })
+        }
+        transform()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedValue, resultLanguage, pathname, prettifyResult])
 
     return (
         <>
@@ -90,8 +93,8 @@ const TransformPanel: FC<Props> = ({ editorValue, editorTitle, resultTitle, tran
                     <div>
                         {resultTitle && <h2 className='text-sm tracking-wide font-bold p-2 uppercase text-indigo-300'>{resultTitle}</h2>}
                     </div>
-                    {resultHeaderElements}
                     <div className='flex gap-2'>
+                        {resultHeaderElements}
                         <button onClick={onCopy} className='bg-slate-50/20 text-sm px-2 py-1 text-slate-200 rounded shadow-md font-bold'>
                             {hasCopied ? 'Copied' : 'Copy'}
                         </button>

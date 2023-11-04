@@ -1,25 +1,33 @@
-import { Metadata } from 'next'
+import { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { Inter, Sono } from 'next/font/google'
 import Sidebar from '~/components/Sidebar'
 import { Toaster } from 'react-hot-toast'
 import Analytics from '~/components/Analytics'
+import clsx from 'clsx'
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-  display: 'optional'
+  display: 'swap',
 })
+
+const sono = Sono({
+  subsets: ['latin'],
+  variable: '--font-sono',
+  display: 'swap',
+});
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 
 export const metadata: Metadata = {
   title: 'Devwiz',
   description: 'One place to find all the tools for developers',
   metadataBase: new URL('https://devwiz.xyz'),
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   twitter: {
     card: 'summary_large_image',
     creator: '@jana__sundar',
@@ -49,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en" className={clsx(inter.variable, sono.variable)}>
       <body className={`bg-zinc-950 text-white font-sans h-screen flex flex-col scroll-smooth`}>
         <main className='flex-1 flex h-full divide-x-2 divide-gray-50/10'>
           <Sidebar />

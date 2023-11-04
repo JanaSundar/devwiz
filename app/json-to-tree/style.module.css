@@ -1,0 +1,9 @@
+.sorcererTheme {
+    /* over all fonts, sizes, and colors */
+    --jse-font-family: var(--font-inter);
+    --jse-font-family-mono: var(--font-sono);
+    --jse-font-size-mono: 14px;
+    --jse-font-size: 16px;
+    --jse-background-color: #09090b;
+    --jse-main-border: 1px solid #09090b;
+}
