@@ -1,0 +1,17 @@
+{
+  "name": "DevForge Toolkit",
+  "short_name": "DevForge",
+  "theme_color": "#0a0a0b",
+  "background_color": "#0a0a0b",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
