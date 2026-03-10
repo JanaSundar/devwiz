@@ -1,45 +1,4 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import type { JSX } from "react";
-
-export const FONT_OPTIONS: Record<
-  string,
-  { family: string; googleQuery: string }
-> = {
-  inter: { family: "Inter", googleQuery: "Inter:wght@400;700" },
-  poppins: { family: "Poppins", googleQuery: "Poppins:wght@400;700" },
-  montserrat: { family: "Montserrat", googleQuery: "Montserrat:wght@400;700" },
-  "playfair-display": {
-    family: "Playfair Display",
-    googleQuery: "Playfair+Display:wght@400;700",
-  },
-  "roboto-mono": {
-    family: "Roboto Mono",
-    googleQuery: "Roboto+Mono:wght@400;700",
-  },
-  lora: { family: "Lora", googleQuery: "Lora:wght@400;700" },
-  merriweather: {
-    family: "Merriweather",
-    googleQuery: "Merriweather:wght@400;700",
-  },
-  "open-sans": { family: "Open Sans", googleQuery: "Open+Sans:wght@400;700" },
-  "source-sans-3": {
-    family: "Source Sans 3",
-    googleQuery: "Source+Sans+3:wght@400;700",
-  },
-  nunito: { family: "Nunito", googleQuery: "Nunito:wght@400;700" },
-  "dm-sans": { family: "DM Sans", googleQuery: "DM+Sans:wght@400;700" },
-  manrope: { family: "Manrope", googleQuery: "Manrope:wght@400;700" },
-  archivo: { family: "Archivo", googleQuery: "Archivo:wght@400;700" },
-  "space-grotesk": {
-    family: "Space Grotesk",
-    googleQuery: "Space+Grotesk:wght@400;700",
-  },
-  "bebas-neue": { family: "Bebas Neue", googleQuery: "Bebas+Neue" },
-  raleway: { family: "Raleway", googleQuery: "Raleway:wght@400;700" },
-  "work-sans": { family: "Work Sans", googleQuery: "Work+Sans:wght@400;700" },
-  "fira-sans": { family: "Fira Sans", googleQuery: "Fira+Sans:wght@400;700" },
-};
 
 export type OgTemplate = "home" | "tool" | "docs" | "classic";
 export type OgLayout = "default" | "centered" | "spotlight" | "editorial";
@@ -199,23 +158,35 @@ export function getTemplateConfig(template: OgTemplate): OgTemplateConfig {
   return OG_TEMPLATE_CONFIGS[template];
 }
 
-export function getLogoDataUrl(colorHex = "#6db87a"): Promise<string | null> {
+export function getLogoDataUrl(
+  colorHex = "#6db87a",
+  logoSvgUrl?: string,
+): Promise<string | null> {
   const color = /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(colorHex)
     ? colorHex
     : "#6db87a";
-  const cached = logoDataUrlCache.get(color);
+  if (!logoSvgUrl) {
+    return Promise.resolve(null);
+  }
+
+  const cacheKey = `${logoSvgUrl}::${color}`;
+  const cached = logoDataUrlCache.get(cacheKey);
   if (cached) {
     return cached;
   }
 
-  const request = readFile(path.join(process.cwd(), "public/logo.svg"), "utf8")
+  const request = fetch(logoSvgUrl, { cache: "force-cache" })
+    .then((res) => (res.ok ? res.text() : null))
     .then((svg) => {
+      if (!svg) {
+        return null;
+      }
       const coloredSvg = svg.replace(/currentColor/g, color);
       return `data:image/svg+xml;utf8,${encodeURIComponent(coloredSvg)}`;
     })
     .catch(() => null);
 
-  logoDataUrlCache.set(color, request);
+  logoDataUrlCache.set(cacheKey, request);
   return request;
 }
 

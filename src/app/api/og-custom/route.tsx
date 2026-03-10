@@ -1,7 +1,7 @@
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "next/og";
 import { html } from "satori-html";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function GET(req: Request) {
   try {
@@ -13,7 +13,12 @@ export async function GET(req: Request) {
     }
 
     // Decode the JSX/HTML payload from base64 safely supporting Unicode
-    const rawHtml = Buffer.from(encodedJsx, "base64").toString("utf-8");
+    const binary = atob(encodedJsx);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    const rawHtml = new TextDecoder().decode(bytes);
 
     // Use satori-html to parse it into an AST suitable for ImageResponse
     const element = html(rawHtml) as unknown as React.ReactElement;

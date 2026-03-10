@@ -1,7 +1,5 @@
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "next/og";
 import {
-  FONT_OPTIONS,
-  getLogoDataUrl,
   getTemplateConfig,
   type OgAlign,
   type OgLayout,
@@ -12,50 +10,7 @@ import {
 } from "@/lib/ogHelpers";
 import { getOgBackgroundImage } from "@/lib/ogImageStore";
 
-export const runtime = "nodejs";
-
-const fontCache = new Map<string, Promise<ArrayBuffer | null>>();
-
-async function loadGoogleFont(
-  googleQuery: string,
-): Promise<ArrayBuffer | null> {
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${googleQuery}&display=swap`;
-  const cssRes = await fetch(cssUrl, {
-    cache: "force-cache",
-  });
-
-  if (!cssRes.ok) {
-    return null;
-  }
-
-  const css = await cssRes.text();
-  const match = css.match(/url\(([^)]+)\)/);
-  if (!match?.[1]) {
-    return null;
-  }
-
-  const fontUrl = match[1].replace(/['"]/g, "");
-  const fontRes = await fetch(fontUrl, { cache: "force-cache" });
-  if (!fontRes.ok) {
-    return null;
-  }
-
-  return fontRes.arrayBuffer();
-}
-
-function getFontData(
-  key: string,
-  googleQuery: string,
-): Promise<ArrayBuffer | null> {
-  const cached = fontCache.get(key);
-  if (cached) {
-    return cached;
-  }
-
-  const request = loadGoogleFont(googleQuery).catch(() => null);
-  fontCache.set(key, request);
-  return request;
-}
+export const runtime = "edge";
 
 export async function GET(req: Request) {
   try {
@@ -67,9 +22,7 @@ export async function GET(req: Request) {
     const template = resolveTemplate(searchParams.get("template"), toolName);
     const title = resolveTitle(template, toolName, requestedTitle);
 
-    const logoColor = safeColor(searchParams.get("logoColor"), "#6db87a");
-    const logoUrl =
-      (await getLogoDataUrl(logoColor)) || `${requestUrl.origin}/logo.svg`;
+    const logoUrl = `${requestUrl.origin}/logo.svg`;
     const subtitle = searchParams.get("subtitle")?.slice(0, 200) || "";
     const brand = searchParams.get("brand")?.slice(0, 36) || "DevWiz";
     const footer = searchParams.get("footer")?.slice(0, 50) || "";
@@ -96,9 +49,6 @@ export async function GET(req: Request) {
       layoutParam === "editorial"
         ? layoutParam
         : "default";
-    const fontKey = searchParams.get("fontFamily") || "inter";
-    const selectedFont = FONT_OPTIONS[fontKey];
-    const fontFamily = selectedFont?.family || "sans-serif";
     const parsedTitleFontSize = Number.parseInt(
       searchParams.get("titleFontSize") ?? "",
       10,
@@ -148,10 +98,6 @@ export async function GET(req: Request) {
       footer,
     });
 
-    const fontData = selectedFont
-      ? await getFontData(fontKey, selectedFont.googleQuery)
-      : null;
-
     return new ImageResponse(
       <div
         style={{
@@ -169,7 +115,7 @@ export async function GET(req: Request) {
               }
             : {}),
           color: text,
-          fontFamily,
+          fontFamily: "Inter, system-ui, sans-serif",
         }}
       >
         {contentObj}
@@ -177,21 +123,10 @@ export async function GET(req: Request) {
       {
         width: 1200,
         height: 630,
-        ...(fontData
-          ? {
-              fonts: [
-                {
-                  name: fontFamily,
-                  data: fontData,
-                  style: "normal" as const,
-                  weight: 400,
-                },
-              ],
-            }
-          : {}),
       },
     );
-  } catch {
+  } catch (error) {
+    console.error("/api/og generation failed", error);
     return new Response("Failed to generate OG image", { status: 500 });
   }
 }

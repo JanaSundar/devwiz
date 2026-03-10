@@ -31,27 +31,6 @@ type Palette = {
   accent: string;
 };
 
-const FONT_OPTIONS = [
-  { value: "inter", label: "Inter" },
-  { value: "poppins", label: "Poppins" },
-  { value: "montserrat", label: "Montserrat" },
-  { value: "playfair-display", label: "Playfair Display" },
-  { value: "roboto-mono", label: "Roboto Mono" },
-  { value: "lora", label: "Lora" },
-  { value: "merriweather", label: "Merriweather" },
-  { value: "open-sans", label: "Open Sans" },
-  { value: "source-sans-3", label: "Source Sans 3" },
-  { value: "nunito", label: "Nunito" },
-  { value: "dm-sans", label: "DM Sans" },
-  { value: "manrope", label: "Manrope" },
-  { value: "archivo", label: "Archivo" },
-  { value: "space-grotesk", label: "Space Grotesk" },
-  { value: "bebas-neue", label: "Bebas Neue" },
-  { value: "raleway", label: "Raleway" },
-  { value: "work-sans", label: "Work Sans" },
-  { value: "fira-sans", label: "Fira Sans" },
-] as const;
-
 export default function OgImageClient() {
   const { resolvedTheme } = useTheme();
   const [mode, setMode] = useState<"gui" | "code">("gui");
@@ -66,7 +45,6 @@ export default function OgImageClient() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [align, setAlign] = useState<"left" | "center" | "right">("center");
   const [layout, setLayout] = useState("default");
-  const [fontFamily, setFontFamily] = useState("inter");
   const [palette, setPalette] = useState<Palette>({
     bg: "#1a1a18",
     text: "#e4e4d8",
@@ -133,7 +111,6 @@ export default function OgImageClient() {
       theme,
       align,
       layout,
-      fontFamily,
       titleFontSize: "82",
       bg: palette.bg,
       text: palette.text,
@@ -150,7 +127,6 @@ export default function OgImageClient() {
     theme,
     align,
     layout,
-    fontFamily,
     palette,
     debouncedCode,
   ]);
@@ -273,7 +249,7 @@ export default function OgImageClient() {
           {mode === "gui" ? (
             <div className="p-4 md:p-6 space-y-5">
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
                       Template Layout
@@ -287,22 +263,6 @@ export default function OgImageClient() {
                       <option value="centered">Centered Large</option>
                       <option value="spotlight">Spotlight</option>
                       <option value="editorial">Editorial</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
-                      Font Family
-                    </label>
-                    <select
-                      value={fontFamily}
-                      onChange={(e) => setFontFamily(e.target.value)}
-                      className="mt-2 w-full px-3 py-2 text-sm rounded-lg bg-bg-secondary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
-                    >
-                      {FONT_OPTIONS.map((font) => (
-                        <option key={font.value} value={font.value}>
-                          {font.label}
-                        </option>
-                      ))}
                     </select>
                   </div>
                 </div>
