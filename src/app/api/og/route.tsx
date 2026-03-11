@@ -25,8 +25,11 @@ export async function GET(req: Request) {
     const title = resolveTitle(template, toolName, requestedTitle);
 
     const rawLogoUrl = `${requestUrl.origin}/logo.svg`;
+    const theme = searchParams.get("theme") === "light" ? "light" : "dark";
     const logoColor =
-      template === "home" || template === "tool" ? "#ffffff" : "#6db87a";
+      template === "home" || template === "tool" || theme === "dark"
+        ? "#ffffff"
+        : "#000000";
     // The source logo uses currentColor; convert to a data URL with explicit fill for predictable OG rendering.
     const logoUrl =
       (await getLogoDataUrl(logoColor, rawLogoUrl)) ||
@@ -35,8 +38,6 @@ export async function GET(req: Request) {
     const brand = searchParams.get("brand")?.slice(0, 36) || siteConfig.name;
     const siteHost = new URL(siteUrl).host;
     const footer = searchParams.get("footer")?.slice(0, 50) || "";
-
-    const theme = searchParams.get("theme") === "light" ? "light" : "dark";
     const alignParam = searchParams.get("align");
     const align: OgAlign =
       alignParam === "left" || alignParam === "right" ? alignParam : "center";
@@ -84,7 +85,7 @@ export async function GET(req: Request) {
     );
     const accent = safeColor(
       searchParams.get("accent"),
-      theme === "light" ? "#1e4d2b" : "#6db87a",
+      theme === "light" ? "#1a1a18" : "#ffffff",
     );
     const textAlign = align;
     const justify =

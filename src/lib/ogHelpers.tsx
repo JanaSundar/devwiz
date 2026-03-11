@@ -159,12 +159,12 @@ export function getTemplateConfig(template: OgTemplate): OgTemplateConfig {
 }
 
 export function getLogoDataUrl(
-  colorHex = "#6db87a",
+  colorHex = "#ffffff",
   logoSvgUrl?: string,
 ): Promise<string | null> {
   const color = /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(colorHex)
     ? colorHex
-    : "#6db87a";
+    : "#ffffff";
   if (!logoSvgUrl) {
     return Promise.resolve(null);
   }

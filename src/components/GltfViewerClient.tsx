@@ -4,10 +4,12 @@ import {
   Bounds,
   OrbitControls,
   Stage,
+  Stats,
   useGLTF,
   useProgress,
 } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
+import { folder, Leva, useControls } from "leva";
 import {
   AlertTriangle,
   Box,
@@ -17,8 +19,9 @@ import {
   X,
 } from "lucide-react";
 import type { ComponentRef } from "react";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { PerspectiveCamera } from "three";
 import ToolHeader from "@/components/tooling/ToolHeader";
 
 type LoadedModel = {
@@ -148,7 +151,17 @@ function LoadingOverlay() {
   );
 }
 
-function GltfModel({ url }: { url: string }) {
+function GltfModel({
+  url,
+  position,
+  rotation,
+  scale,
+}: {
+  url: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: number;
+}) {
   const gltf = useGLTF(url);
 
   useEffect(() => {
@@ -157,40 +170,67 @@ function GltfModel({ url }: { url: string }) {
     };
   }, [url]);
 
-  return <primitive object={gltf.scene} />;
+  return (
+    <primitive
+      object={gltf.scene}
+      position={position}
+      rotation={rotation}
+      scale={scale}
+    />
+  );
 }
 
 function Scene({
   modelUrl,
   resetSignal,
+  controls: levaControls,
+  containerRef,
 }: {
   modelUrl: string;
   resetSignal: number;
+  controls: any;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const controlsRef = useRef<ComponentRef<typeof OrbitControls> | null>(null);
+  const controlsRef = useRef<ComponentRef<typeof OrbitControls>>(null);
   const { camera } = useThree();
 
   useEffect(() => {
-    camera.position.set(2.5, 2, 2.5);
-    camera.near = 0.1;
-    camera.far = 100;
-    camera.updateProjectionMatrix();
+    if (camera instanceof PerspectiveCamera) {
+      camera.position.set(2.5, 2, 2.5);
+      camera.fov = 45;
+      camera.updateProjectionMatrix();
+    }
     controlsRef.current?.target.set(0, 0, 0);
     controlsRef.current?.update();
   }, [camera, resetSignal]);
 
   return (
     <>
-      <ambientLight intensity={0.35} />
+      {levaControls.showStats && (
+        <Stats
+          parent={containerRef as React.RefObject<HTMLElement>}
+          className="!absolute !left-4 !top-auto !bottom-4 !right-auto"
+        />
+      )}
+      <ambientLight intensity={levaControls.ambientIntensity} />
       <Suspense fallback={null}>
         <Bounds fit clip observe margin={1.2}>
           <Stage
-            intensity={0.6}
-            environment="city"
-            shadows
+            intensity={levaControls.stageIntensity}
+            environment={levaControls.environment}
+            shadows={levaControls.shadows}
             adjustCamera={false}
           >
-            <GltfModel url={modelUrl} />
+            <GltfModel
+              url={modelUrl}
+              position={[levaControls.x, levaControls.y, levaControls.z]}
+              rotation={[
+                levaControls.rotationX,
+                levaControls.rotationY,
+                levaControls.rotationZ,
+              ]}
+              scale={levaControls.scale}
+            />
           </Stage>
         </Bounds>
       </Suspense>
@@ -199,8 +239,8 @@ function Scene({
         makeDefault
         enableDamping
         dampingFactor={0.08}
-        minDistance={0.5}
-        maxDistance={24}
+        minDistance={0.1}
+        maxDistance={100}
       />
     </>
   );
@@ -210,7 +250,51 @@ export default function GltfViewerClient() {
   const [model, setModel] = useState<LoadedModel | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
   const [modelError, setModelError] = useState("");
-  const folderInputRef = useRef<HTMLInputElement | null>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const controls = useControls({
+    modelTransform: folder(
+      {
+        x: { value: 0, min: -10, max: 10, step: 0.1 },
+        y: { value: 0, min: -10, max: 10, step: 0.1 },
+        z: { value: 0, min: -10, max: 10, step: 0.1 },
+        rotationX: { value: 0, min: -Math.PI, max: Math.PI, step: 0.01 },
+        rotationY: { value: 0, min: -Math.PI, max: Math.PI, step: 0.01 },
+        rotationZ: { value: 0, min: -Math.PI, max: Math.PI, step: 0.01 },
+        scale: { value: 1, min: 0.1, max: 10, step: 0.1 },
+      },
+      { collapsed: true },
+    ),
+    lighting: folder(
+      {
+        ambientIntensity: { value: 0.35, min: 0, max: 2, step: 0.05 },
+        stageIntensity: { value: 0.6, min: 0, max: 2, step: 0.05 },
+        environment: {
+          value: "city",
+          options: [
+            "city",
+            "apartment",
+            "lobby",
+            "night",
+            "park",
+            "studio",
+            "sunset",
+            "warehouse",
+          ],
+        },
+        shadows: true,
+      },
+      { collapsed: true },
+    ),
+    scene: folder(
+      {
+        backgroundColor: "#0a0b10",
+        showStats: false,
+      },
+      { collapsed: true },
+    ),
+  });
 
   useEffect(() => {
     return () => {
@@ -276,6 +360,7 @@ export default function GltfViewerClient() {
         {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
       />
       <ToolHeader title="GLTF/GLB 3D Model Viewer" badge="Utilities" />
+      <Leva hidden={!model} />
 
       {!model ? (
         <section className="m-4 flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-bg-secondary/70 p-8 text-center">
@@ -321,12 +406,21 @@ export default function GltfViewerClient() {
           )}
         </section>
       ) : (
-        <section className="relative m-4 flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-[#0a0b10]">
+        <section
+          ref={containerRef}
+          className="relative m-4 flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border"
+          style={{ backgroundColor: controls.backgroundColor }}
+        >
           <Canvas
             className="h-full w-full"
             camera={{ position: [2.5, 2, 2.5], fov: 45 }}
           >
-            <Scene modelUrl={model.url} resetSignal={resetSignal} />
+            <Scene
+              modelUrl={model.url}
+              resetSignal={resetSignal}
+              controls={controls}
+              containerRef={containerRef}
+            />
           </Canvas>
 
           <LoadingOverlay />
