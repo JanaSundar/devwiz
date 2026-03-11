@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "dompurify";
 import {
   AlertCircle,
   Check,
@@ -11,9 +12,7 @@ import {
   Upload,
   Wand2,
 } from "lucide-react";
-import Image from "next/image";
-import htmlParser from "prettier/parser-html.js";
-import { format } from "prettier/standalone.js";
+import { motion, useSpring } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -54,6 +53,11 @@ export default function SvgViewerClient() {
     cleanupIds: true,
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const zoomScale = useSpring(1, {
+    stiffness: 260,
+    damping: 30,
+    mass: 0.5,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -76,13 +80,25 @@ export default function SvgViewerClient() {
     }
   }, [mounted, svgText]);
 
-  const dataUrl = useMemo(() => {
+  const previewSvg = useMemo(() => {
     if (!mounted) return "";
-    const sourceSvg = parseError ? lastValidSvg : svgText;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(sourceSvg)}`;
+    return parseError ? lastValidSvg : svgText;
   }, [mounted, parseError, lastValidSvg, svgText]);
 
+  const sanitizedPreviewSvg = useMemo(() => {
+    if (!previewSvg) return "";
+    return DOMPurify.sanitize(previewSvg, {
+      USE_PROFILES: { svg: true, svgFilters: true },
+      FORBID_TAGS: ["script", "foreignObject"],
+      FORBID_ATTR: ["onload", "onclick", "onerror"],
+    });
+  }, [previewSvg]);
+
   const onUploadClick = () => fileInputRef.current?.click();
+
+  useEffect(() => {
+    zoomScale.set(zoom / 100);
+  }, [zoom, zoomScale]);
 
   const onUploadFile = async (file: File | null) => {
     if (!file) return;
@@ -114,14 +130,24 @@ export default function SvgViewerClient() {
     if (parseError || !svgText.trim()) return;
 
     try {
-      const prettySvg = await format(svgText, {
-        parser: "html",
-        plugins: [htmlParser],
-        htmlWhitespaceSensitivity: "ignore",
-        tabWidth: 2,
+      const res = await fetch("/api/transform/svgo", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input: svgText,
+          options: {
+            formatOnly: true,
+            pretty: options.pretty,
+          },
+        }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to format SVG");
+      }
 
-      setSvgText(prettySvg);
+      setSvgText(data.output || svgText);
       setOptimizeInfo("SVG formatted.");
     } catch (error) {
       setOptimizeError(
@@ -176,8 +202,9 @@ export default function SvgViewerClient() {
   };
 
   const onCopyDataUri = async () => {
-    if (!dataUrl) return;
+    if (!previewSvg) return;
     try {
+      const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
       await navigator.clipboard.writeText(dataUrl);
       setCopyDataUriOk(true);
       setTimeout(() => setCopyDataUriOk(false), 1500);
@@ -340,7 +367,7 @@ export default function SvgViewerClient() {
           />
           <button
             onClick={onCopyDataUri}
-            disabled={!dataUrl}
+            disabled={!previewSvg}
             className="px-2 py-1 rounded btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {copyDataUriOk ? "Copied Data URI" : "Copy Data URI"}
@@ -417,30 +444,28 @@ export default function SvgViewerClient() {
             <div className="flex-1 rounded-b-xl border border-border bg-bg-secondary overflow-hidden">
               <div className="w-full h-full p-4">
                 <div className="w-full h-full rounded-xl border border-border bg-[linear-gradient(45deg,rgba(0,0,0,0.04)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.04)_75%,rgba(0,0,0,0.04)),linear-gradient(45deg,rgba(0,0,0,0.04)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.04)_75%,rgba(0,0,0,0.04))] bg-size-[20px_20px] bg-position-[0_0,10px_10px] flex items-center justify-center overflow-auto">
-                  <div
+                  <motion.div
                     style={{
-                      transform: `scale(${zoom / 100})`,
+                      scale: zoomScale,
                       transformOrigin: "center center",
                     }}
-                    className="transition-transform duration-150"
+                    className="will-change-transform"
                   >
-                    {/* Data URI preview uses a plain img to render raw SVG safely without server roundtrips. */}
-                    {dataUrl ? (
-                      <Image
-                        src={dataUrl}
-                        alt="SVG preview"
-                        width={1200}
-                        height={1200}
-                        unoptimized
-                        className="max-w-none w-auto h-auto"
-                        draggable={false}
+                    {sanitizedPreviewSvg ? (
+                      <div
+                        className="max-w-none w-auto h-auto [&_svg]:block [&_svg]:w-72 md:[&_svg]:w-96 [&_svg]:h-auto"
+                        role="img"
+                        aria-label="SVG preview"
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizedPreviewSvg,
+                        }}
                       />
                     ) : (
                       <div className="text-xs text-txt-muted">
                         Preparing preview...
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </div>

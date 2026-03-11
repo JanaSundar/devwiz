@@ -13,10 +13,16 @@ export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
   "diff-viewer": "/diff-viewer",
   "icon-search": "/icons",
   "og-image": "/og-image",
+  blurhash: "/blurhash",
+  "hash-generator": "/hash-generator",
+  "password-generator": "/password-generator",
   metascraper: "/metascraper",
   "id-studio": "/id-studio",
   "faker-js": "/faker-js",
   "curl-converter": "/curl-converter",
+  "gltf-viewer": "/gltf-viewer",
+  "gltf-to-jsx": "/gltf-to-jsx",
+  "cubic-bezier": "/cubic-bezier",
 };
 
 export function getToolHref(toolId: string) {

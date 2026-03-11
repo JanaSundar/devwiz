@@ -1,15 +1,72 @@
 # DevWiz
 
-DevWiz is a multi-tool developer utility app built with Next.js App Router. It includes format transformers, API/debug utilities, image/meta tooling, and interactive editors in a single workspace.
+Build faster with one focused developer workspace.
 
-## Features
+DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debugging, visual tooling, API helpers, AI-assisted workflows, and productivity utilities, all in a single modern web app.
 
-- Data transforms: JSON/YAML/TOML/XML/Markdown/CSS/URL conversion
-- Utility tools: JWT debugger, timestamp converter, cron helper, curl converter, diff viewer
-- Visual tools: SVG viewer/optimizer, JSON tree/graph, OG image playground, whiteboard
-- AI-assisted tools through Hugging Face-compatible models
-- README generator with drag-and-drop sections
-- PWA/service worker support via Serwist
+## Highlights
+
+- 30+ built-in tools across utilities, converters, JSON workflows, and AI tools
+- Visual and interactive tooling for JSON, SVG, OG images, whiteboarding, and curves
+- 3D model utilities including GLTF/GLB viewer and GLTF to JSX flow
+- PWA support with service worker integration via Serwist
+- App Router architecture with reusable client components and clean route mapping
+
+## Tool Map
+
+### Utilities
+
+- Icon Search
+- Whiteboard
+- Diff Viewer
+- OG Image Generator
+- Metascraper
+- UUID / NanoID / ULID Studio
+- Fake Data Generator
+- cURL Converter
+- BlurHash Generator
+- Hash Generator
+- Password Generator
+- JWT Debugger
+- Timestamp Converter
+- Cron Expression Helper
+- GLTF/GLB 3D Model Viewer
+- Cubic-Bezier Visualizer
+
+### AI Tools
+
+- Regex Explainer (AI)
+- Code Commenter (AI)
+- Mock Data Generator (AI)
+- Commit Message (AI)
+- Error Explainer (AI)
+
+### Converters
+
+- SVG to JSX
+- SVG Viewer
+- Color Converter
+- GLTF to JSX
+- String Case Converter
+
+### Data and Format Workflows
+
+- JSON to TypeScript
+- URL Encode / Decode
+- JSON to Tree View
+- JSON to Graph
+- CSS to Tailwind
+- JSON to YAML
+- YAML to JSON
+- JS Object to JSON
+- CSS to JS Objects
+- Markdown to HTML
+- XML to JSON
+- JSON to JSON Schema
+- JSON to TOML
+- TOML to JSON
+- YAML to TOML
+- TOML to YAML
 
 ## Tech Stack
 
@@ -17,51 +74,100 @@ DevWiz is a multi-tool developer utility app built with Next.js App Router. It i
 - React 19
 - TypeScript
 - Tailwind CSS 4
-- Biome (lint + format)
+- Biome for linting and formatting
+- Serwist for service worker and PWA behavior
 
-## Getting Started
+## Quick Start
 
-1. Install dependencies:
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+
+### Install
 
 ```bash
 pnpm install
 ```
 
-2. Run development mode:
+### Run in Development
 
 ```bash
 pnpm dev
 ```
 
-The app runs at `http://localhost:3000`.
+Open http://localhost:3000.
 
-## Scripts
+### Production Build
 
-- `pnpm dev`: Next.js dev server + Serwist watcher
-- `pnpm build`: build service worker + Next.js production build
-- `pnpm start`: start production server
-- `pnpm lint`: run Biome linter
-- `pnpm lint:fix`: run Biome lint fixes
-- `pnpm check`: run full Biome checks
-- `pnpm format`: format files with Biome
+```bash
+pnpm build
+pnpm start
+```
 
-## Environment Variables
+## Available Scripts
 
-Set canonical SEO URL:
+- pnpm dev: start Next.js dev server and Serwist watcher
+- pnpm build: build service worker and Next.js production bundle
+- pnpm start: run production server
+- pnpm lint: run Biome lint checks
+- pnpm lint:fix: auto-fix lint issues with Biome
+- pnpm check: run Biome checks across project
+- pnpm format: format project with Biome
+
+## Configuration
+
+Set canonical site URL for SEO metadata:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
-Used for:
+This value is used for:
 
-- `sitemap.xml`
-- `robots.txt` host/sitemap
-- global metadata base and OG URLs
+- sitemap generation
+- robots host and sitemap entries
+- metadata base and OG URL composition
 
-For AI tools, configure tokens/models in the in-app settings UI.
+For AI-powered tools, configure provider/model credentials in the in-app settings panel.
 
-## Notes
+## Project Structure
 
-- This repo uses `pnpm`, so dependency content is stored mainly under `node_modules/.pnpm`.
-- If you are checking disk usage, inspect `node_modules/.pnpm` rather than top-level symlinks.
+```text
+src/
+	app/                # App Router pages and API routes
+	components/         # Tool clients and shared UI
+	lib/                # Registry, routing, helpers, utilities
+	hooks/              # Shared hooks
+	workers/            # Web workers (transform pipelines)
+```
+
+Core entry points:
+
+- src/lib/registry.ts: tool metadata and catalog
+- src/lib/toolRoutes.ts: tool to route mapping
+- src/app/transform/[toolId]/page.tsx: dynamic transform tool route
+
+## Quality and Standards
+
+- Type-safe codebase with TypeScript
+- Biome-driven formatting and lint checks
+- Modular components for easier maintenance and feature growth
+
+## Contribution
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make changes with clear commits.
+4. Run quality checks:
+
+```bash
+pnpm check
+pnpm lint
+```
+
+5. Open a pull request with screenshots or short videos for UI changes.
+
+## License
+
+This project is licensed under the MIT License. See LICENSE for details.

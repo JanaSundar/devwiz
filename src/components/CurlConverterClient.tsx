@@ -171,16 +171,6 @@ export default function CurlConverterClient() {
             </option>
           ))}
         </select>
-        <button
-          onClick={() => {
-            setCurlInput(SAMPLE_CURL);
-            setTarget("python");
-            setOutput("");
-          }}
-          className="px-3 py-2 text-sm rounded-lg border border-border bg-bg-primary text-txt hover:bg-bg-secondary tr-smooth w-full md:w-auto"
-        >
-          Load Sample
-        </button>
       </div>
 
       <ToolPanels

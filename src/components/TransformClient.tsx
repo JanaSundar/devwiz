@@ -30,6 +30,7 @@ export default function TransformClient() {
   const toolId = params.toolId;
   const tool = getTransformById(toolId);
   const { transform, isGenerating } = useTransformWorker();
+  const isAiTool = !!toolId && AI_TOOLS.has(toolId);
 
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -62,9 +63,8 @@ export default function TransformClient() {
       router.replace(`/transform/${transforms[0].id}`);
   }, [tool, router]);
 
-  const runTransform = useCallback(
+  const executeTransform = useCallback(
     async (val: string, opts = svgrOptions) => {
-      setInput(val);
       const currentReq = ++requestCntRef.current;
 
       if (!val.trim()) {
@@ -75,7 +75,7 @@ export default function TransformClient() {
       if (!toolId) return;
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      const delay = AI_TOOLS.has(toolId) ? 800 : 150;
+      const delay = AI_TOOLS.has(toolId) ? 0 : 150;
       debounceRef.current = setTimeout(async () => {
         const onStream = AI_TOOLS.has(toolId)
           ? (chunk: string) => {
@@ -105,6 +105,20 @@ export default function TransformClient() {
     [toolId, transform, tool, svgrOptions],
   );
 
+  const handleInputChange = useCallback(
+    (val: string) => {
+      setInput(val);
+      setError(null);
+      if (isAiTool) return;
+      void executeTransform(val);
+    },
+    [executeTransform, isAiTool],
+  );
+
+  const handleRun = useCallback(() => {
+    void executeTransform(input);
+  }, [executeTransform, input]);
+
   const handleCopy = async () => {
     if (!output) return;
     try {
@@ -121,7 +135,11 @@ export default function TransformClient() {
   };
 
   const handleExample = () => {
-    if (tool?.placeholder) runTransform(tool.placeholder);
+    if (!tool?.placeholder) return;
+    setInput(tool.placeholder);
+    if (!isAiTool) {
+      void executeTransform(tool.placeholder);
+    }
   };
 
   const handleFormat = () => {
@@ -131,7 +149,9 @@ export default function TransformClient() {
         const formatted = JSON.stringify(JSON.parse(input), null, 2);
         if (formatted !== input) {
           setInput(formatted);
-          runTransform(formatted);
+          if (!isAiTool) {
+            void executeTransform(formatted);
+          }
         }
       }
     } catch {
@@ -160,6 +180,20 @@ export default function TransformClient() {
             <Sparkles size={12} />
             Example
           </button>
+          {isAiTool && (
+            <button
+              onClick={handleRun}
+              disabled={!input.trim() || isGenerating}
+              className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-accent disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Wand2 size={12} />
+              )}
+              Run
+            </button>
+          )}
           <button
             onClick={handleClear}
             className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
@@ -226,7 +260,7 @@ export default function TransformClient() {
                         [opt.key]: e.target.checked,
                       };
                       setSvgrOptions(newOpts);
-                      runTransform(input, newOpts);
+                      void executeTransform(input, newOpts);
                     }}
                   />
                   <div className="w-8 h-4.5 bg-bg border border-border rounded-full peer peer-checked:bg-accent/20 peer-checked:border-accent/40 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-txt-muted peer-checked:after:bg-accent after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5 tr-smooth"></div>
@@ -248,7 +282,7 @@ export default function TransformClient() {
                     expandProps: e.target.value as "none" | "start" | "end",
                   };
                   setSvgrOptions(newOpts);
-                  runTransform(input, newOpts);
+                  void executeTransform(input, newOpts);
                 }}
               >
                 <option value="none">None</option>
@@ -281,7 +315,7 @@ export default function TransformClient() {
           <div className="flex-1 rounded-b-xl border border-border bg-bg-secondary overflow-hidden flex flex-col">
             <CodeEditor
               value={input}
-              onChange={runTransform}
+              onChange={handleInputChange}
               language={tool.inputLang}
               placeholder={tool.placeholder}
             />

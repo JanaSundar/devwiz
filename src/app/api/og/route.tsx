@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import {
+  getLogoDataUrl,
   getTemplateConfig,
   type OgAlign,
   type OgLayout,
@@ -9,6 +10,7 @@ import {
   sanitizeBackgroundImageUrl,
 } from "@/lib/ogHelpers";
 import { getOgBackgroundImage } from "@/lib/ogImageStore";
+import { siteConfig, siteUrl } from "@/lib/site";
 
 export const runtime = "edge";
 
@@ -22,9 +24,16 @@ export async function GET(req: Request) {
     const template = resolveTemplate(searchParams.get("template"), toolName);
     const title = resolveTitle(template, toolName, requestedTitle);
 
-    const logoUrl = `${requestUrl.origin}/logo.svg`;
+    const rawLogoUrl = `${requestUrl.origin}/logo.svg`;
+    const logoColor =
+      template === "home" || template === "tool" ? "#ffffff" : "#6db87a";
+    // The source logo uses currentColor; convert to a data URL with explicit fill for predictable OG rendering.
+    const logoUrl =
+      (await getLogoDataUrl(logoColor, rawLogoUrl)) ||
+      `${requestUrl.origin}/logo.png`;
     const subtitle = searchParams.get("subtitle")?.slice(0, 200) || "";
-    const brand = searchParams.get("brand")?.slice(0, 36) || "DevWiz";
+    const brand = searchParams.get("brand")?.slice(0, 36) || siteConfig.name;
+    const siteHost = new URL(siteUrl).host;
     const footer = searchParams.get("footer")?.slice(0, 50) || "";
 
     const theme = searchParams.get("theme") === "light" ? "light" : "dark";
@@ -59,7 +68,11 @@ export async function GET(req: Request) {
 
     const bg = safeColor(
       searchParams.get("bg"),
-      theme === "light" ? "#f5f2e0" : "#000000",
+      template === "home" || template === "tool"
+        ? "#000000"
+        : theme === "light"
+          ? "#f5f2e0"
+          : "#000000",
     );
     const text = safeColor(
       searchParams.get("text"),
@@ -86,6 +99,7 @@ export async function GET(req: Request) {
     const contentObj = templateConfig.render({
       logoUrl,
       brand,
+      siteHost,
       title,
       subtitle,
       titleFontSize,

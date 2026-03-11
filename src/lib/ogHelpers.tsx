@@ -8,6 +8,7 @@ export type OgJustify = "flex-start" | "center" | "flex-end";
 export type OgTemplateRenderInput = {
   logoUrl: string;
   brand: string;
+  siteHost: string;
   title: string;
   subtitle: string;
   titleFontSize: number;
@@ -96,25 +97,24 @@ const OG_TEMPLATE_CONFIGS: Record<OgTemplate, OgTemplateConfig> = {
   tool: {
     key: "tool",
     backgroundColor: "black",
-    allowBackgroundImage: true,
-    render: ({ logoUrl, brand, title, subtitle, titleFontSize }) =>
-      renderToolOrDocsContent({
+    allowBackgroundImage: false,
+    render: ({ logoUrl, title, subtitle, titleFontSize }) =>
+      renderToolSimpleContent({
         logoUrl,
-        brand,
         title,
         subtitle,
         titleFontSize,
-        variant: "tool",
       }),
   },
   docs: {
     key: "docs",
     backgroundColor: "black",
     allowBackgroundImage: true,
-    render: ({ logoUrl, brand, title, subtitle, titleFontSize }) =>
+    render: ({ logoUrl, brand, siteHost, title, subtitle, titleFontSize }) =>
       renderToolOrDocsContent({
         logoUrl,
         brand,
+        siteHost,
         title,
         subtitle,
         titleFontSize,
@@ -206,9 +206,9 @@ export function renderHomeContent(logoUrl: string): JSX.Element {
       <img
         src={logoUrl}
         alt="DevWiz logo"
-        width={180}
-        height={180}
-        style={{ width: 180, height: 180, objectFit: "contain" }}
+        width={112}
+        height={112}
+        style={{ width: 112, height: 112, objectFit: "contain" }}
       />
     </div>
   );
@@ -217,12 +217,14 @@ export function renderHomeContent(logoUrl: string): JSX.Element {
 export function renderToolOrDocsContent(params: {
   logoUrl: string;
   brand: string;
+  siteHost: string;
   title: string;
   subtitle: string;
   titleFontSize: number;
   variant: "tool" | "docs";
 }): JSX.Element {
-  const { logoUrl, brand, title, subtitle, titleFontSize, variant } = params;
+  const { logoUrl, brand, siteHost, title, subtitle, titleFontSize, variant } =
+    params;
 
   return (
     <div
@@ -318,31 +320,74 @@ export function renderToolOrDocsContent(params: {
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: 999,
-              background: "linear-gradient(145deg, #64e2ab, #5ca6ff)",
-              boxShadow: "0 0 20px rgba(100, 226, 171, 0.55)",
-            }}
-          />
-          <div style={{ fontSize: 22, color: "#92a0c2" }}>
-            devwiz.vercel.app
-          </div>
+        <div style={{ fontSize: 22, color: "#92a0c2" }}>{siteHost}</div>
+      </div>
+    </div>
+  );
+}
+
+export function renderToolSimpleContent(params: {
+  logoUrl: string;
+  title: string;
+  subtitle: string;
+  titleFontSize: number;
+}): JSX.Element {
+  const { logoUrl, title, subtitle, titleFontSize } = params;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "56px 56px 56px 56px",
+      }}
+    >
+      {/* biome-ignore lint/performance/noImgElement: @vercel/og ImageResponse requires standard img elements in template JSX. */}
+      <img
+        src={logoUrl}
+        alt="DevWiz logo"
+        width={56}
+        height={56}
+        style={{ width: 56, height: 56, objectFit: "contain" }}
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          justifyContent: "flex-end",
+          gap: 16,
+          maxWidth: "72%",
+          textAlign: "left",
+        }}
+      >
+        <div
+          style={{
+            fontSize: Math.min(
+              68,
+              Math.max(42, Math.floor(titleFontSize * 0.78)),
+            ),
+            fontWeight: 700,
+            lineHeight: 1.06,
+            color: "#f3f6ff",
+            maxWidth: "100%",
+          }}
+        >
+          {title}
         </div>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 230,
-            height: 10,
-            borderRadius: 999,
-            background: "linear-gradient(90deg, #6db87a, rgba(109,184,122,0))",
+            fontSize: 22,
+            color: "#aeb8d3",
+            lineHeight: 1.28,
+            maxWidth: "100%",
           }}
-        ></div>
+        >
+          {subtitle || "Developer Tool"}
+        </div>
       </div>
     </div>
   );

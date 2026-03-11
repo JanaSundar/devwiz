@@ -1,6 +1,5 @@
 import { transform } from "@svgr/core";
 import jsxPlugin from "@svgr/plugin-jsx";
-import prettierPlugin from "@svgr/plugin-prettier";
 import svgoPlugin from "@svgr/plugin-svgo";
 import { NextResponse } from "next/server";
 import "@babel/preset-typescript"; // Explicitly import for Turbopack to find it
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
           // Order determines the pipeline execution order
           svgoPlugin,
           jsxPlugin,
-          prettierPlugin,
         ],
       },
       { componentName: "SvgComponent" },

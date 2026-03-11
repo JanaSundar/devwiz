@@ -64,7 +64,9 @@ export default function ToolHeader({
         </div>
         <div className="flex items-center gap-2 w-auto shrink-0 overflow-x-auto">
           <div className="hidden md:block">{poweredByLink}</div>
-          {rightSlot}
+          <div className="flex items-center gap-2 [&_button]:text-[0px] [&_a]:text-[0px] md:[&_button]:text-xs md:[&_a]:text-xs">
+            {rightSlot}
+          </div>
           <ThemeToggle />
         </div>
       </div>

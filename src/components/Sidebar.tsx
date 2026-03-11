@@ -311,9 +311,28 @@ function SidebarContent({
           {showLabels && <span>API Settings</span>}
         </button>
         {showLabels && (
-          <p className="text-[9px] text-txt-muted/60 text-center leading-relaxed">
-            No logins. No tracking.
-          </p>
+          <div className="flex items-center justify-center gap-3 text-[12px] text-txt-muted leading-relaxed">
+            <p>Made by Jana</p>
+            <a
+              href="https://github.com/JanaSundar/devwiz"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center text-txt-muted hover:text-txt tr-smooth"
+              aria-label="DevWiz GitHub repository"
+            >
+              <span className="sr-only">DevWiz GitHub repository</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M12 .297a12 12 0 0 0-3.793 23.389c.6.111.82-.261.82-.58 0-.286-.01-1.04-.015-2.04-3.338.726-4.042-1.611-4.042-1.611-.546-1.387-1.333-1.757-1.333-1.757-1.09-.744.083-.729.083-.729 1.205.085 1.839 1.238 1.839 1.238 1.07 1.833 2.809 1.304 3.495.997.108-.776.418-1.305.761-1.604-2.665-.304-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.301 1.23a11.49 11.49 0 0 1 6.003 0c2.291-1.552 3.297-1.23 3.297-1.23.655 1.653.243 2.874.119 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.371.814 1.102.814 2.222 0 1.606-.015 2.899-.015 3.293 0 .321.216.694.825.576A12 12 0 0 0 12 .297" />
+              </svg>
+            </a>
+          </div>
         )}
       </div>
     </>
