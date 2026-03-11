@@ -59,6 +59,13 @@
     --app-border: rgba(255, 255, 255, 0.08);
   }
 
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -74,8 +81,9 @@
   }
 
   body {
-    min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
+    padding: var(--sat) var(--sar) var(--sab) var(--sal);
   }
 
   ::-webkit-scrollbar {

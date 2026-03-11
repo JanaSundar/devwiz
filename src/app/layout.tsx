@@ -42,7 +42,7 @@ export const metadata: Metadata = {
         url: "/api/og?template=home",
         width: 1200,
         height: 630,
-        alt: "DevWiz",
+        alt: siteConfig.name,
       },
     ],
   },
@@ -64,7 +64,12 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
 };
@@ -101,7 +106,7 @@ export default function RootLayout({
         />
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <div className="flex h-screen w-screen bg-grad overflow-hidden">
+            <div className="flex h-screen h-[100dvh] w-screen w-[100dvw] bg-grad overflow-hidden">
               <Sidebar />
               {children}
             </div>

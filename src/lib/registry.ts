@@ -263,17 +263,6 @@ export const transforms: TransformConfig[] = [
     placeholder: "#ff5c5c\nhsl(0, 100%, 68%)",
   },
   {
-    id: "gltf-to-jsx",
-    name: "GLTF to JSX",
-    category: "Converters",
-    inputLabel: "GLTF/GLB",
-    outputLabel: "React Three Fiber",
-    inputLang: "markdown",
-    outputLang: "typescript",
-    placeholder:
-      "Upload a model and generate declarative React Three Fiber code.",
-  },
-  {
     id: "string-case",
     name: "String Case Converter",
     category: "Converters",
