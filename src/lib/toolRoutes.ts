@@ -23,6 +23,7 @@ export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
   "gltf-viewer": "/gltf-viewer",
   "gltf-to-jsx": "/gltf-to-jsx",
   "cubic-bezier": "/cubic-bezier",
+  "flex-grid-playground": "/flex-grid-playground",
 };
 
 export function getToolHref(toolId: string) {

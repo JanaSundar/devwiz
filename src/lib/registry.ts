@@ -1,11 +1,39 @@
+export type ToolCategory =
+  | "Utilities"
+  | "AI Tools"
+  | "Converters"
+  | "Playground"
+  | "JSON"
+  | "YAML"
+  | "TOML"
+  | "CSS"
+  | "Markdown"
+  | "XML"
+  | "Encoding"
+  | "JavaScript";
+
+export type EditorLanguage =
+  | "json"
+  | "javascript"
+  | "typescript"
+  | "yaml"
+  | "xml"
+  | "css"
+  | "markdown"
+  | "html"
+  | "toml"
+  | "shell"
+  | "diff"
+  | "canvas";
+
 export interface TransformConfig {
   id: string;
   name: string;
-  category: string;
+  category: ToolCategory;
   inputLabel: string;
   outputLabel: string;
-  inputLang: string;
-  outputLang: string;
+  inputLang: EditorLanguage;
+  outputLang: EditorLanguage;
   placeholder: string;
 }
 
@@ -173,8 +201,6 @@ export const transforms: TransformConfig[] = [
     outputLang: "css",
     placeholder: "Adjust bezier handles and copy CSS or Motion timing values.",
   },
-
-  // --- AI Tools ---
   {
     id: "ai-regex-explainer",
     name: "Regex Explainer (AI)",
@@ -450,19 +476,46 @@ export const transforms: TransformConfig[] = [
     placeholder:
       '[server]\nhost = "localhost"\nport = 3000\n\n[database]\nname = "mydb"\nuser = "admin"',
   },
+
+  // --- Playground ---
+  {
+    id: "flex-grid-playground",
+    name: "Flex & Grid Playground",
+    category: "Playground",
+    inputLabel: "CSS",
+    outputLabel: "Preview",
+    inputLang: "css",
+    outputLang: "html",
+    placeholder:
+      "Try Flexbox or Grid — switch mode above, edit CSS, and see the layout update live.",
+  },
 ];
 
-export const categories = [
+export const AI_TOOL_IDS = new Set([
+  "ai-regex-explainer",
+  "ai-code-commenter",
+  "ai-readme-writer",
+  "ai-mock-data",
+  "ai-commit-msg",
+  "ai-error-explainer",
+]);
+
+const PINNED_CATEGORIES: ToolCategory[] = [
   "Utilities",
   "AI Tools",
+  "Playground",
   "Converters",
+];
+
+export const categories: ToolCategory[] = [
+  ...PINNED_CATEGORIES,
   ...new Set(
     transforms
       .map((t) => t.category)
-      .filter((c) => !["Utilities", "AI Tools", "Converters"].includes(c)),
+      .filter((c): c is ToolCategory => !PINNED_CATEGORIES.includes(c)),
   ),
 ];
 
-export function getTransformById(id: string) {
+export function getTransformById(id: string): TransformConfig | undefined {
   return transforms.find((t) => t.id === id);
 }

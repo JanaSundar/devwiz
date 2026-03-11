@@ -21,6 +21,13 @@
       "tailwindDirectives": true
     }
   },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -34,7 +41,9 @@
         "noSvgWithoutTitle": "off"
       },
       "correctness": {
-        "useExhaustiveDependencies": "off"
+        "useExhaustiveDependencies": "warn",
+        "noUnusedImports": "warn",
+        "noUnusedVariables": "warn"
       },
       "complexity": {
         "noImportantStyles": "off"
@@ -43,7 +52,8 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "suspicious": {
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noExplicitAny": "warn"
       }
     }
   }

@@ -71,8 +71,8 @@ export default function DiffViewerClient() {
   return (
     <div className="flex flex-col h-full bg-bg-secondary flex-1">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-primary/50 backdrop-blur-sm z-10 shrink-0">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-6 py-4 border-b border-border bg-bg-primary/50 backdrop-blur-sm z-10 shrink-0 gap-3">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-accent">
             <ArrowLeftRight size={18} />
             <h1 className="text-sm font-semibold text-txt tracking-wide">
@@ -81,7 +81,7 @@ export default function DiffViewerClient() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
           <div className="flex items-center bg-bg-primary rounded-lg border border-border p-1">
             <button
               onClick={() => setSplitView(true)}

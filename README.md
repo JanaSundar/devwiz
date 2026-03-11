@@ -6,11 +6,21 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ## Highlights
 
-- 30+ built-in tools across utilities, converters, JSON workflows, and AI tools
+- 40+ built-in tools across utilities, converters, JSON workflows, and AI tools
 - Visual and interactive tooling for JSON, SVG, OG images, whiteboarding, and curves
-- 3D model utilities including GLTF/GLB viewer and GLTF to JSX flow
+- **Global Command Menu**: Quick access to all tools and themes via `Cmd+K`
+- **Flex & Grid Playground**: Interactive CSS flexbox / grid “lab” with challenges, hints, and live preview
+- **Premium UI**: Sleek theme-aware aesthetic with smooth motion transitions and responsive layouts for mobile and tablet
+- 3D model utility with a premium GLTF/GLB viewer and orbit controls
 - PWA support with service worker integration via Serwist
 - App Router architecture with reusable client components and clean route mapping
+
+## Keyboard Shortcuts
+
+- `⌘ K`: Open Global Command Menu
+- `ESC`: Close active menu or modal
+- `↑ / ↓`: Navigate tool lists or command menu
+- `Enter`: Select or open tool
 
 ## Tool Map
 
@@ -41,12 +51,15 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - Commit Message (AI)
 - Error Explainer (AI)
 
+### Playground
+
+- Flex & Grid Playground
+
 ### Converters
 
 - SVG to JSX
 - SVG Viewer
 - Color Converter
-- GLTF to JSX
 - String Case Converter
 
 ### Data and Format Workflows
@@ -74,6 +87,8 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - React 19
 - TypeScript
 - Tailwind CSS 4
+- Command Menu (`cmdk`)
+- Animations via `motion/react`
 - Biome for linting and formatting
 - Serwist for service worker and PWA behavior
 

@@ -1,17 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AI_TOOL_IDS } from "@/lib/registry";
 import { safeGetItem } from "@/lib/storage";
 
 type WorkerResult = { id: string; output: string; error: string | null };
-
-const AI_TOOLS = new Set([
-  "ai-regex-explainer",
-  "ai-code-commenter",
-  "ai-readme-writer",
-  "ai-mock-data",
-  "ai-commit-msg",
-  "ai-error-explainer",
-]);
 
 export function useTransformWorker() {
   const workerRef = useRef<Worker | null>(null);
@@ -44,7 +36,7 @@ export function useTransformWorker() {
       options?: Record<string, unknown>,
     ): Promise<{ output: string; error: string | null }> => {
       // AI tools go through the API route with streaming
-      if (AI_TOOLS.has(toolId)) {
+      if (AI_TOOL_IDS.has(toolId)) {
         return streamAI(toolId, input, onStream, setIsGenerating, abortRef);
       }
 

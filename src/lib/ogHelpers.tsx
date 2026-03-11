@@ -82,7 +82,7 @@ export function resolveTitle(
   requestedTitle: string | undefined,
 ): string {
   if (template === "tool" || template === "docs") {
-    return toolName || requestedTitle || "Developer Tool";
+    return toolName || requestedTitle || "";
   }
   return requestedTitle || "DevWiz";
 }
@@ -309,7 +309,7 @@ export function renderToolOrDocsContent(params: {
           {title}
         </div>
         <div style={{ fontSize: 27, color: "#aeb8d3", lineHeight: 1.25 }}>
-          {subtitle || "Developer Tool"}
+          {subtitle}
         </div>
       </div>
 
@@ -386,7 +386,7 @@ export function renderToolSimpleContent(params: {
             maxWidth: "100%",
           }}
         >
-          {subtitle || "Developer Tool"}
+          {subtitle}
         </div>
       </div>
     </div>

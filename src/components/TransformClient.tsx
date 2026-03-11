@@ -13,16 +13,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useTransformWorker } from "@/hooks/useTransformWorker";
-import { getTransformById, transforms } from "@/lib/registry";
-
-const AI_TOOLS = new Set([
-  "ai-regex-explainer",
-  "ai-code-commenter",
-  "ai-readme-writer",
-  "ai-mock-data",
-  "ai-commit-msg",
-  "ai-error-explainer",
-]);
+import { AI_TOOL_IDS, getTransformById, transforms } from "@/lib/registry";
+import { cn } from "@/lib/utils";
 
 export default function TransformClient() {
   const params = useParams<{ toolId: string }>();
@@ -30,7 +22,7 @@ export default function TransformClient() {
   const toolId = params.toolId;
   const tool = getTransformById(toolId);
   const { transform, isGenerating } = useTransformWorker();
-  const isAiTool = !!toolId && AI_TOOLS.has(toolId);
+  const isAiTool = !!toolId && AI_TOOL_IDS.has(toolId);
 
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -75,9 +67,9 @@ export default function TransformClient() {
       if (!toolId) return;
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      const delay = AI_TOOLS.has(toolId) ? 0 : 150;
+      const delay = AI_TOOL_IDS.has(toolId) ? 0 : 150;
       debounceRef.current = setTimeout(async () => {
-        const onStream = AI_TOOLS.has(toolId)
+        const onStream = AI_TOOL_IDS.has(toolId)
           ? (chunk: string) => {
               if (currentReq === requestCntRef.current) {
                 setOutput((prev) => (prev !== chunk ? chunk : prev));
@@ -163,7 +155,7 @@ export default function TransformClient() {
 
   return (
     <div className="flex flex-col h-full anim-in">
-      <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
         <div className="flex items-center gap-2 md:gap-3 pl-10 md:pl-0 min-w-0 flex-1">
           <h2 className="text-base md:text-lg font-semibold text-txt truncate">
             {tool.name}
@@ -172,7 +164,7 @@ export default function TransformClient() {
             {tool.category}
           </span>
         </div>
-        <div className="flex items-center gap-2 w-auto shrink-0 overflow-x-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 overflow-x-auto md:justify-end">
           <button
             onClick={handleExample}
             className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
@@ -204,13 +196,14 @@ export default function TransformClient() {
           <button
             onClick={handleCopy}
             disabled={!output}
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs tr-smooth ${
+            className={cn(
+              "whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs tr-smooth",
               copied
                 ? "bg-success/15 text-success border border-success/20"
                 : output
                   ? "btn-accent"
-                  : "btn-glass opacity-50 cursor-not-allowed"
-            }`}
+                  : "btn-glass opacity-50 cursor-not-allowed",
+            )}
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
             {copied ? "Copied!" : "Copy"}
@@ -323,7 +316,7 @@ export default function TransformClient() {
         </div>
 
         <div className="flex lg:flex-col items-center justify-center py-2 lg:py-0 shrink-0">
-          <div className="w-full lg:w-px h-px lg:h-full bg-gradient-to-r lg:bg-gradient-to-b from-transparent via-accent/20 to-transparent" />
+          <div className="w-full lg:w-px h-px lg:h-full bg-linear-to-r lg:bg-linear-to-b from-transparent via-accent/20 to-transparent" />
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-[300px] lg:min-h-0">

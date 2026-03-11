@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import "jsoncrack-react/style.css";
+import { CommandMenu } from "@/components/CommandMenu";
+import QueryProvider from "@/components/QueryProvider";
+import Sidebar from "@/components/Sidebar";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { siteConfig, siteUrl } from "@/lib/site";
 
 const inter = Inter({
@@ -74,11 +78,6 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-import { CommandMenu } from "@/components/CommandMenu";
-import QueryProvider from "@/components/QueryProvider";
-import Sidebar from "@/components/Sidebar";
-import { ThemeProvider } from "@/components/ThemeProvider";
-
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -106,7 +105,7 @@ export default function RootLayout({
         />
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <div className="flex h-screen h-[100dvh] w-screen w-[100dvw] bg-grad overflow-hidden">
+            <div className="flex h-dvh w-dvw bg-grad overflow-hidden">
               <Sidebar />
               {children}
             </div>

@@ -126,7 +126,7 @@ export default function ReadmeClient() {
 
   return (
     <div className="flex flex-col h-full anim-in">
-      <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
         <div className="flex items-center gap-2 md:gap-3 pl-10 md:pl-0 min-w-0 flex-1">
           <h2 className="text-base md:text-lg font-semibold text-txt truncate shrink-0">
             README Generator
@@ -135,7 +135,7 @@ export default function ReadmeClient() {
             {sections.filter((s) => s.enabled).length} sections active
           </span>
         </div>
-        <div className="flex items-center gap-2 w-auto shrink-0 overflow-x-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 overflow-x-auto md:justify-end">
           <button
             onClick={reset}
             className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"

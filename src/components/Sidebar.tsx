@@ -14,6 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 import { categories, transforms } from "@/lib/registry";
 import { getCategoryIcon } from "@/lib/toolCategoryIcon";
 import { getToolHref } from "@/lib/toolRoutes";
+import { cn } from "@/lib/utils";
 import SettingsModal from "./SettingsModal";
 
 export default function Sidebar() {
@@ -67,11 +68,11 @@ export default function Sidebar() {
       </button>
 
       <aside
-        className={[
+        className={cn(
           "hidden md:flex flex-col h-full border-r border-border overflow-hidden bg-bg-secondary",
           "transition-all duration-200 ease-out",
           collapsed ? "w-16" : "w-64",
-        ].join(" ")}
+        )}
       >
         <SidebarContent
           showLabels={showLabels}
@@ -100,11 +101,11 @@ export default function Sidebar() {
       </aside>
 
       <aside
-        className={[
+        className={cn(
           "md:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-bg-secondary border-r border-border overflow-hidden",
           "transition-transform duration-200 ease-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
-        ].join(" ")}
+        )}
       >
         <SidebarContent
           showLabels={true}
@@ -162,34 +163,65 @@ function SidebarContent({
   return (
     <>
       <div className="flex items-center gap-3 p-4 border-b border-border shrink-0">
-        {showLabels && (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-bg-primary border border-border flex items-center justify-center shrink-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 512 512"
-                className="text-txt"
-              >
-                <path
-                  d="M464 6.1c9.5-8.5 24-8.1 33 .9l8 8c9 9 9.4 23.5.9 33l-85.8 95.9c-2.6 2.9-4.1 6.7-4.1 10.7V176c0 8.8-7.2 16-16 16h-15.8c-4.6 0-8.9 1.9-11.9 5.3L100.7 500.9C94.3 508 85.3 512 75.8 512c-8.8 0-17.3-3.5-23.5-9.8L9.7 459.7C3.5 453.4 0 445 0 436.2c0-9.5 4-18.5 11.1-24.8l111.6-99.8c3.4-3 5.3-7.4 5.3-11.9V272c0-8.8 7.2-16 16-16h34.6c3.9 0 7.7-1.5 10.7-4.1L464 6.1zM432 288c3.6 0 6.7 2.4 7.7 5.8l14.8 51.7 51.7 14.8c3.4 1 5.8 4.1 5.8 7.7s-2.4 6.7-5.8 7.7l-51.7 14.8-14.8 51.7c-1 3.4-4.1 5.8-7.7 5.8s-6.7-2.4-7.7-5.8l-14.8-51.7-51.7-14.8c-3.4-1-5.8-4.1-5.8-7.7s2.4-6.7 5.8-7.7l51.7-14.8 14.8-51.7c1-3.4 4.1-5.8 7.7-5.8zM87.7 69.8l14.8 51.7 51.7 14.8c3.4 1 5.8 4.1 5.8 7.7s-2.4 6.7-5.8 7.7l-51.7 14.8-14.8 51.7c-1 3.4-4.1 5.8-7.7 5.8s-6.7-2.4-7.7-5.8l-14.8-51.7-51.7-14.8c-3.4-1-5.8-4.1-5.8-7.7s2.4-6.7 5.8-7.7l51.7-14.8 14.8-51.7c1-3.4 4.1-5.8 7.7-5.8s6.7 2.4 7.7 5.8zM208 0c3.7 0 6.9 2.5 7.8 6.1l6.8 27.3 27.3 6.8c3.6.9 6.1 4.1 6.1 7.8s-2.5 6.9-6.1 7.8l-27.3 6.8-6.8 27.3c-.9 3.6-4.1 6.1-7.8 6.1s-6.9-2.5-7.8-6.1l-6.8-27.3-27.3-6.8c-3.6-.9-6.1-4.1-6.1-7.8s2.5-6.9 6.1-7.8l27.3-6.8 6.8-27.3c.9-3.6 4.1-6.1 7.8-6.1z"
-                  fill="currentColor"
-                ></path>
-              </svg>
+        {showLabels ? (
+          <div className="flex items-center justify-between w-full min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-bg-primary border border-border flex items-center justify-center shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 512 512"
+                  className="text-txt"
+                >
+                  <path
+                    d="M464 6.1c9.5-8.5 24-8.1 33 .9l8 8c9 9 9.4 23.5.9 33l-85.8 95.9c-2.6 2.9-4.1 6.7-4.1 10.7V176c0 8.8-7.2 16-16 16h-15.8c-4.6 0-8.9 1.9-11.9 5.3L100.7 500.9C94.3 508 85.3 512 75.8 512c-8.8 0-17.3-3.5-23.5-9.8L9.7 459.7C3.5 453.4 0 445 0 436.2c0-9.5 4-18.5 11.1-24.8l111.6-99.8c3.4-3 5.3-7.4 5.3-11.9V272c0-8.8 7.2-16 16-16h34.6c3.9 0 7.7-1.5 10.7-4.1L464 6.1zM432 288c3.6 0 6.7 2.4 7.7 5.8l14.8 51.7 51.7 14.8c3.4 1 5.8 4.1 5.8 7.7s-2.4 6.7-5.8 7.7l-51.7 14.8-14.8 51.7c-1 3.4-4.1 5.8-7.7 5.8s-6.7-2.4-7.7-5.8l-14.8-51.7-51.7-14.8c-3.4-1-5.8-4.1-5.8-7.7s2.4-6.7 5.8-7.7l51.7-14.8 14.8-51.7c1-3.4 4.1-5.8 7.7-5.8zM87.7 69.8l14.8 51.7 51.7 14.8c3.4 1 5.8 4.1 5.8 7.7s-2.4 6.7-5.8 7.7l-51.7 14.8-14.8 51.7c-1 3.4-4.1 5.8-7.7 5.8s-6.7-2.4-7.7-5.8l-14.8-51.7-51.7-14.8c-3.4-1-5.8-4.1-5.8-7.7s2.4-6.7 5.8-7.7l51.7-14.8 14.8-51.7c1-3.4 4.1-5.8 7.7-5.8s6.7 2.4 7.7 5.8zM208 0c3.7 0 6.9 2.5 7.8 6.1l6.8 27.3 27.3 6.8c3.6.9 6.1 4.1 6.1 7.8s-2.5 6.9-6.1 7.8l-27.3 6.8-6.8 27.3c-.9 3.6-4.1 6.1-7.8 6.1s-6.9-2.5-7.8-6.1l-6.8-27.3-27.3-6.8c-3.6-.9-6.1-4.1-6.1-7.8s2.5-6.9 6.1-7.8l27.3-6.8 6.8-27.3c.9-3.6 4.1-6.1 7.8-6.1z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold text-txt tracking-tight">
+                  DevWiz
+                </h1>
+                <p className="text-[10px] text-txt-muted">developer tools</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-sm font-bold text-txt tracking-tight">
-                DevWiz
-              </h1>
-              <p className="text-[10px] text-txt-muted">developer tools</p>
-            </div>
+
+            <button
+              onClick={() =>
+                document.dispatchEvent(
+                  new KeyboardEvent("keydown", { key: "k", metaKey: true }),
+                )
+              }
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-bg-primary border border-border hover:border-txt/20 transition-all group scale-95"
+              title="Open command menu (⌘K)"
+            >
+              <span className="text-[10px] font-black text-txt-muted group-hover:text-txt tracking-tighter">
+                ⌘K
+              </span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <button
+              onClick={() =>
+                document.dispatchEvent(
+                  new KeyboardEvent("keydown", { key: "k", metaKey: true }),
+                )
+              }
+              className="p-1.5 rounded-md btn-glass shrink-0"
+              aria-label="Open command menu"
+              title="Command menu (⌘K)"
+            >
+              <span className="text-[10px] font-mono">⌘K</span>
+            </button>
+            {headerButton}
           </div>
         )}
-        {headerButton}
       </div>
 
-      {showLabels && (
+      {showLabels ? (
         <div className="p-3 shrink-0">
           <div className="relative">
             <Search
@@ -205,6 +237,22 @@ function SidebarContent({
             />
           </div>
         </div>
+      ) : (
+        <div className="px-3 pb-2 shrink-0">
+          <button
+            type="button"
+            onClick={() =>
+              document.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "k", metaKey: true }),
+              )
+            }
+            className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-bg-primary border border-border text-[11px] text-txt-muted hover:text-txt hover:border-txt/20 tr-smooth"
+            title="Search tools (⌘K)"
+          >
+            <Search size={12} />
+            <span>Search</span>
+          </button>
+        </div>
       )}
 
       <nav className="flex-1 overflow-y-auto px-2 pb-2 space-y-1">
@@ -213,13 +261,13 @@ function SidebarContent({
           <Link
             href="/"
             onClick={onNavClick}
-            className={[
+            className={cn(
               "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs tr-smooth",
               pathname === "/"
                 ? "bg-accent/10 text-accent font-medium border border-accent/15"
                 : "text-txt-sec hover:bg-glass-hover hover:text-txt border border-transparent",
-              !showLabels ? "justify-center" : "",
-            ].join(" ")}
+              !showLabels && "justify-center",
+            )}
           >
             <Home size={15} className="shrink-0" />
             {showLabels && <span>Home</span>}
@@ -236,13 +284,13 @@ function SidebarContent({
           <Link
             href="/readme"
             onClick={onNavClick}
-            className={[
+            className={cn(
               "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs tr-smooth",
               pathname === "/readme"
                 ? "bg-accent/10 text-accent font-medium border border-accent/15"
                 : "text-txt-sec hover:bg-glass-hover hover:text-txt border border-transparent",
-              !showLabels ? "justify-center" : "",
-            ].join(" ")}
+              !showLabels && "justify-center",
+            )}
           >
             <FileText size={15} className="shrink-0" />
             {showLabels && <span>README Generator</span>}
@@ -275,19 +323,20 @@ function SidebarContent({
                     key={tool.id}
                     href={href}
                     onClick={onNavClick}
-                    className={[
+                    className={cn(
                       "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs tr-smooth",
                       active
                         ? "bg-accent/10 text-accent font-medium border border-accent/15"
                         : "text-txt-sec hover:bg-glass-hover hover:text-txt border border-transparent",
-                      !showLabels ? "justify-center" : "",
-                    ].join(" ")}
+                      !showLabels && "justify-center",
+                    )}
+                    title={tool.name}
                   >
                     {showLabels ? (
                       <span>{tool.name}</span>
                     ) : (
-                      <span className="text-[10px] font-mono">
-                        {tool.inputLabel.slice(0, 2)}
+                      <span className="w-6 h-6 rounded-md border border-border flex items-center justify-center">
+                        {getCatIcon(tool.category)}
                       </span>
                     )}
                   </Link>
@@ -305,7 +354,10 @@ function SidebarContent({
       <div className="p-3 border-t border-border mt-auto shrink-0 space-y-2">
         <button
           onClick={() => setShowSettings(true)}
-          className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs tr-smooth text-txt-muted hover:bg-glass-hover hover:text-txt w-full ${!showLabels ? "justify-center" : ""}`}
+          className={cn(
+            "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs tr-smooth text-txt-muted hover:bg-glass-hover hover:text-txt w-full",
+            !showLabels && "justify-center",
+          )}
         >
           <Settings size={15} className="shrink-0" />
           {showLabels && <span>API Settings</span>}

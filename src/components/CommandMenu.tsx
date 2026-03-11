@@ -1,23 +1,33 @@
 "use client";
 
 import { Command } from "cmdk";
-import { Search } from "lucide-react";
+import { Monitor, Moon, Search, Sun } from "lucide-react";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { DialogTitle } from "@/components/ui/dialog";
 import { transforms } from "@/lib/registry";
 import { getCategoryIcon } from "@/lib/toolCategoryIcon";
 import { getToolHref } from "@/lib/toolRoutes";
 
+const THEMES = [
+  { id: "light", name: "Light Mode", icon: Sun },
+  { id: "dark", name: "Dark Mode", icon: Moon },
+  { id: "system", name: "System Preference", icon: Monitor },
+] as const;
+
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((o) => !o);
       }
     };
 
@@ -28,72 +38,143 @@ export function CommandMenu() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg-primary/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <Command.Dialog
-        open={open}
-        onOpenChange={setOpen}
-        label="Global Command Menu"
-        className="w-full max-w-2xl bg-bg-secondary border border-border shadow-2xl overflow-hidden rounded-2xl animate-in fade-in zoom-in-95 duration-200"
-        aria-describedby="cmdk-description"
+    <Command.Dialog
+      open={open}
+      onOpenChange={setOpen}
+      label="Global Command Menu"
+      value={value}
+      onValueChange={setValue}
+      container={typeof document !== "undefined" ? document.body : undefined}
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-txt/15 backdrop-blur-sm animate-in fade-in duration-300"
+      aria-describedby="cmdk-description"
+    >
+      <div
+        className="cmdk-palette w-full max-w-lg bg-bg-secondary border border-border overflow-hidden rounded-xl animate-in zoom-in-95 duration-300 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
       >
         <DialogTitle className="sr-only">Global Command Menu</DialogTitle>
         <div id="cmdk-description" className="sr-only">
           Search commands
         </div>
+
         <div className="flex items-center border-b border-border px-4 py-3">
-          <Search className="w-5 h-5 text-txt-muted mr-3 shrink-0" />
+          <Search className="w-4 h-4 text-txt-muted shrink-0 mr-3" />
           <Command.Input
-            placeholder="Search for tools, converters, AI..."
-            className="flex-1 bg-transparent border-none outline-none text-txt placeholder:text-txt-muted text-base"
+            placeholder="Type a command..."
+            className="flex-1 bg-transparent border-none outline-none text-txt placeholder:text-txt-muted text-sm font-medium min-w-0"
             autoFocus
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-txt-muted bg-bg-primary border border-border rounded">
+          <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded border border-border text-txt-muted text-[10px] font-mono">
             ESC
           </kbd>
         </div>
 
-        <Command.List className="max-h-[60vh] overflow-y-auto p-2">
-          <Command.Empty className="py-12 text-center text-sm text-txt-muted">
-            No results found.
+        <Command.List className="max-h-[50vh] overflow-y-auto py-2 scrollable-area">
+          <Command.Empty className="py-12 text-center text-txt-muted text-sm">
+            No results found
           </Command.Empty>
 
-          {/* Group by category */}
           {Array.from(new Set(transforms.map((t) => t.category))).map(
             (category) => (
               <Command.Group
                 key={category}
                 heading={category}
-                className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-txt-muted [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
+                className="cmdk-group [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-txt-muted [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
               >
                 {transforms
                   .filter((t) => t.category === category)
                   .map((tool) => (
                     <Command.Item
                       key={tool.id}
-                      value={`${tool.name} ${tool.category} ${tool.id}`}
+                      value={tool.name.toLowerCase()}
                       onSelect={() => {
                         setOpen(false);
                         router.push(getToolHref(tool.id));
                       }}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer aria-selected:bg-accent/20 aria-selected:text-txt-primary data-[selected=true]:bg-accent/20 data-[selected=true]:text-txt-primary text-sm text-txt tr-smooth"
+                      className="cmdk-item relative flex items-center gap-3 px-4 py-2.5 cursor-pointer text-txt data-[selected=true]:bg-bg-tertiary data-[selected=true]:text-txt transition-colors"
                     >
-                      <div className="w-6 h-6 rounded flex items-center justify-center bg-bg-primary border border-border shrink-0">
+                      {value === tool.name.toLowerCase() && (
+                        <motion.div
+                          layoutId="cmdk-active"
+                          className="absolute inset-0 bg-bg-tertiary rounded-md -z-10"
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.4,
+                          }}
+                        />
+                      )}
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-border shrink-0 [.cmdk-item[data-selected=true]_&]:border-border">
                         {getCategoryIcon(tool.category, {
-                          size: 14,
-                          className: "text-accent",
+                          size: 16,
+                          className:
+                            "text-txt-sec [.cmdk-item[data-selected=true]_&]:text-txt",
                         })}
                       </div>
-                      <span className="flex-1 font-medium">{tool.name}</span>
-                      <span className="hidden sm:inline-block text-xs text-txt-muted">
-                        {tool.id}
+                      <span className="font-medium text-sm truncate">
+                        {tool.name}
                       </span>
                     </Command.Item>
                   ))}
               </Command.Group>
             ),
           )}
+
+          <Command.Group
+            heading="Preferences"
+            className="cmdk-group [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-txt-muted [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
+          >
+            {THEMES.map((t) => (
+              <Command.Item
+                key={t.id}
+                value={t.name.toLowerCase()}
+                onSelect={() => {
+                  setTheme(t.id);
+                  setOpen(false);
+                }}
+                className="cmdk-item relative flex items-center gap-3 px-4 py-2.5 cursor-pointer text-txt data-[selected=true]:bg-bg-tertiary data-[selected=true]:text-txt transition-colors"
+              >
+                {value === t.name.toLowerCase() && (
+                  <motion.div
+                    layoutId="cmdk-active"
+                    className="absolute inset-0 bg-bg-tertiary rounded-md -z-10"
+                    transition={{
+                      type: "spring",
+                      bounce: 0.2,
+                      duration: 0.4,
+                    }}
+                  />
+                )}
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-border shrink-0 [.cmdk-item[data-selected=true]_&]:border-border">
+                  <t.icon
+                    size={16}
+                    className="text-txt-sec [.cmdk-item[data-selected=true]_&]:text-txt"
+                  />
+                </div>
+                <span className="font-medium text-sm">{t.name}</span>
+              </Command.Item>
+            ))}
+          </Command.Group>
         </Command.List>
-      </Command.Dialog>
-    </div>
+
+        <div className="px-4 py-3 border-t border-border flex items-center justify-between text-txt-muted text-[10px] font-medium">
+          <span>Quick search</span>
+          <div className="flex gap-4">
+            <span className="flex items-center gap-1.5">
+              <kbd className="px-1.5 py-0.5 rounded border border-border font-mono">
+                ↑↓
+              </kbd>
+              Navigate
+            </span>
+            <span className="flex items-center gap-1.5">
+              <kbd className="px-1.5 py-0.5 rounded border border-border font-mono">
+                ↵
+              </kbd>
+              Open
+            </span>
+          </div>
+        </div>
+      </div>
+    </Command.Dialog>
   );
 }
