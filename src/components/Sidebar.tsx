@@ -87,9 +87,9 @@ export default function Sidebar() {
       <aside
         className={cn(
           "hidden md:flex flex-col h-full border-r border-border overflow-hidden bg-bg-secondary",
-          "transition-all duration-200 ease-out",
           collapsed ? "w-16" : "w-64",
         )}
+        style={{ transition: "width 0.2s ease-out" }}
       >
         <SidebarContent
           showLabels={showLabels}
@@ -104,7 +104,7 @@ export default function Sidebar() {
           headerButton={
             <button
               onClick={() => setCollapsed((c) => !c)}
-              className="ml-auto p-1.5 rounded-md btn-glass shrink-0"
+              className="p-1.5 rounded-md btn-glass shrink-0"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {collapsed ? (
@@ -252,7 +252,7 @@ function SidebarContent({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search tools"
-              className="w-full pl-8 pr-3 py-2 text-xs rounded-lg bg-bg-primary border border-border text-txt placeholder:text-txt-muted focus:outline-none focus:border-accent/40 tr-smooth"
+              className="w-full pl-8 pr-3 py-2 text-[13px] rounded-lg bg-bg-primary border border-border text-txt placeholder:text-txt-muted focus:outline-none focus:border-accent/40 tr-smooth"
             />
           </div>
         </div>
@@ -300,7 +300,7 @@ function SidebarContent({
         {/* README Generator */}
         <div className="mb-3">
           {showLabels && (
-            <p className="px-2 py-1 text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
+            <p className="px-2 py-1 text-[11px] font-semibold text-txt-muted uppercase tracking-wider">
               Generators
             </p>
           )}
@@ -308,7 +308,7 @@ function SidebarContent({
             href="/readme"
             onClick={onNavClick}
             className={cn(
-              "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs tr-smooth",
+              "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] tr-smooth",
               pathname === "/readme"
                 ? "bg-accent/10 text-accent font-medium border border-accent/15"
                 : "text-txt-sec hover:bg-glass-hover hover:text-txt border border-transparent",
@@ -323,7 +323,7 @@ function SidebarContent({
         <div className="h-px bg-border mx-2 mb-2" />
 
         {showLabels && (
-          <p className="px-2 py-1 text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
+          <p className="px-2 py-1 text-[11px] font-semibold text-txt-muted uppercase tracking-wider">
             Transforms
           </p>
         )}
@@ -347,7 +347,7 @@ function SidebarContent({
                     href={href}
                     onClick={onNavClick}
                     className={cn(
-                      "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs tr-smooth",
+                      "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[13px] tr-smooth",
                       active
                         ? "bg-accent/10 text-accent font-medium border border-accent/15"
                         : "text-txt-sec hover:bg-glass-hover hover:text-txt border border-transparent",

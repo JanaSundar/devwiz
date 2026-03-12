@@ -28,7 +28,7 @@ type OptimizeOptions = {
 
 const DEFAULT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220" fill="none">
   <rect width="220" height="220" rx="36" fill="#1e4d2b"/>
-  <path d="M51 119L90 157L170 78" stroke="#f5f2e0" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M51 119L90 157L170 78" stroke="#efece0" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="170" cy="78" r="18" fill="#6db87a"/>
 </svg>`;
 

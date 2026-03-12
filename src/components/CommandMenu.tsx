@@ -1,13 +1,13 @@
 "use client";
 
 import { Command } from "cmdk";
-import { Monitor, Moon, Search, Sun } from "lucide-react";
+import { FileText, Home, Monitor, Moon, Search, Sun } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { DialogTitle } from "@/components/ui/dialog";
-import { transforms } from "@/lib/registry";
+import { categories, transforms } from "@/lib/registry";
 import { getCategoryIcon } from "@/lib/toolCategoryIcon";
 import { getToolHref } from "@/lib/toolRoutes";
 
@@ -45,11 +45,16 @@ export function CommandMenu() {
       value={value}
       onValueChange={setValue}
       container={typeof document !== "undefined" ? document.body : undefined}
-      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-txt/15 backdrop-blur-sm animate-in fade-in duration-300"
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-txt/15 backdrop-blur-sm animate-in fade-in duration-300 cursor-default"
       aria-describedby="cmdk-description"
     >
       <div
-        className="cmdk-palette w-full max-w-lg bg-bg-secondary border border-border overflow-hidden rounded-xl animate-in zoom-in-95 duration-300 shadow-xl"
+        className="absolute inset-0 cursor-default"
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
+      <div
+        className="cmdk-palette relative z-10 w-full max-w-lg bg-bg-secondary border border-border overflow-hidden rounded-xl animate-in zoom-in-95 duration-300 shadow-xl cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <DialogTitle className="sr-only">Global Command Menu</DialogTitle>
@@ -74,8 +79,47 @@ export function CommandMenu() {
             No results found
           </Command.Empty>
 
-          {Array.from(new Set(transforms.map((t) => t.category))).map(
-            (category) => (
+          <Command.Group
+            heading="Navigation"
+            className="cmdk-group [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-txt-muted [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
+          >
+            <Command.Item
+              value="home"
+              onSelect={() => {
+                setOpen(false);
+                router.push("/");
+              }}
+              className="cmdk-item relative flex items-center gap-3 px-4 py-2.5 cursor-pointer text-txt data-[selected=true]:bg-bg-tertiary data-[selected=true]:text-txt transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-border shrink-0 [.cmdk-item[data-selected=true]_&]:border-border">
+                <Home
+                  size={16}
+                  className="text-txt-sec [.cmdk-item[data-selected=true]_&]:text-txt"
+                />
+              </div>
+              <span className="font-medium text-sm">Home</span>
+            </Command.Item>
+            <Command.Item
+              value="readme generator"
+              onSelect={() => {
+                setOpen(false);
+                router.push("/readme");
+              }}
+              className="cmdk-item relative flex items-center gap-3 px-4 py-2.5 cursor-pointer text-txt data-[selected=true]:bg-bg-tertiary data-[selected=true]:text-txt transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-border shrink-0 [.cmdk-item[data-selected=true]_&]:border-border">
+                <FileText
+                  size={16}
+                  className="text-txt-sec [.cmdk-item[data-selected=true]_&]:text-txt"
+                />
+              </div>
+              <span className="font-medium text-sm">README Generator</span>
+            </Command.Item>
+          </Command.Group>
+
+          {categories
+            .filter((cat) => transforms.some((t) => t.category === cat))
+            .map((category) => (
               <Command.Group
                 key={category}
                 heading={category}
@@ -117,8 +161,7 @@ export function CommandMenu() {
                     </Command.Item>
                   ))}
               </Command.Group>
-            ),
-          )}
+            ))}
 
           <Command.Group
             heading="Preferences"

@@ -72,7 +72,7 @@ export async function GET(req: Request) {
       template === "home" || template === "tool"
         ? "#000000"
         : theme === "light"
-          ? "#f5f2e0"
+          ? "#efece0"
           : "#000000",
     );
     const text = safeColor(

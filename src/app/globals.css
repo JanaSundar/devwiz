@@ -24,9 +24,9 @@
 
 @layer base {
   :root {
-    --app-bg-primary: #f5f2e0;
-    --app-bg-secondary: #ebe8d6;
-    --app-bg-tertiary: #e2dfce;
+    --app-bg-primary: #efece0;
+    --app-bg-secondary: #e5e2d0;
+    --app-bg-tertiary: #dcd9c8;
     --app-glass: rgba(255, 255, 255, 0.5);
     --app-glass-border: rgba(30, 77, 43, 0.1);
     --app-glass-hover: rgba(30, 77, 43, 0.06);
@@ -321,7 +321,7 @@
 
 .btn-accent {
   background: var(--color-accent);
-  color: #f5f2e0;
+  color: #efece0;
   border: none;
   transition: all 0.2s ease;
   cursor: pointer;

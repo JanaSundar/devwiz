@@ -21,10 +21,12 @@ export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
   "id-studio": "/id-studio",
   "faker-js": "/faker-js",
   "curl-converter": "/curl-converter",
+  "api-playground": "/api-playground",
   "gltf-viewer": "/gltf-viewer",
   "gltf-to-jsx": "/gltf-to-jsx",
   "cubic-bezier": "/cubic-bezier",
   "flex-grid-playground": "/flex-grid-playground",
+  "regex-playground": "/regex-playground",
 };
 
 export function getToolHref(toolId: string) {

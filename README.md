@@ -31,6 +31,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - Icon Search
 - Whiteboard
 - Diff Viewer
+- Regex Playground
 - OG Image Generator
 - Metascraper
 - UUID / NanoID / ULID Studio
@@ -57,10 +58,12 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ### Playground
 
+- API Playground (HTTP requests with CORS bypass)
 - Flex & Grid Playground
 
 ### Converters
 
+- SOAP to REST (SOAP XML → cURL, fetch, Axios, Python)
 - SVG to JSX
 - SVG Viewer
 - Color Converter
