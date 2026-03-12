@@ -48,6 +48,7 @@ import {
   toWget,
 } from "curlconverter";
 import { NextResponse } from "next/server";
+import { apiError, parseJsonBody, requirePost } from "@/lib/api";
 
 export const runtime = "nodejs";
 
@@ -102,37 +103,34 @@ const converters: Record<string, (curl: string) => string> = {
 };
 
 export async function POST(req: Request) {
+  const methodErr = requirePost(req);
+  if (methodErr) return methodErr;
+
+  const parsed = await parseJsonBody<{ curl?: string; target?: string }>(req);
+  if (parsed.error) return parsed.error;
+
+  const { curl = "", target = "" } = parsed.data;
+  const curlStr = typeof curl === "string" ? curl : "";
+  const targetStr = typeof target === "string" ? target : "";
+
+  if (!curlStr.trim()) {
+    return apiError("A curl command is required.", 400);
+  }
+
+  const converter = converters[targetStr];
+  if (!converter) {
+    return apiError("Invalid conversion target.", 400);
+  }
+
   try {
-    const body = await req.json();
-    const curl = typeof body?.curl === "string" ? body.curl : "";
-    const target = typeof body?.target === "string" ? body.target : "";
-
-    if (!curl.trim()) {
-      return NextResponse.json(
-        { error: "A curl command is required." },
-        { status: 400 },
-      );
-    }
-
-    const converter = converters[target];
-    if (!converter) {
-      return NextResponse.json(
-        { error: "Invalid conversion target." },
-        { status: 400 },
-      );
-    }
-
-    const output = converter(curl);
+    const output = converter(curlStr);
     return NextResponse.json({ output });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to convert curl command.",
-      },
-      { status: 500 },
+    return apiError(
+      error instanceof Error
+        ? error.message
+        : "Failed to convert curl command.",
+      500,
     );
   }
 }

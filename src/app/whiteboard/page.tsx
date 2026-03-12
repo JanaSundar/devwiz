@@ -1,4 +1,4 @@
-import ExcalidrawClient from "@/components/ExcalidrawClient";
+import LazyExcalidrawClient from "@/components/LazyExcalidrawClient";
 import ToolPageLayout from "@/components/tooling/ToolPageLayout";
 import { constructMetadata } from "@/lib/metadata";
 
@@ -11,7 +11,7 @@ export const metadata = constructMetadata({
 export default function WhiteboardPage() {
   return (
     <ToolPageLayout>
-      <ExcalidrawClient />
+      <LazyExcalidrawClient />
     </ToolPageLayout>
   );
 }

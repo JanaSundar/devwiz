@@ -1,4 +1,4 @@
-import GltfViewerClient from "@/components/GltfViewerClient";
+import LazyGltfViewerClient from "@/components/LazyGltfViewerClient";
 import ToolPageLayout from "@/components/tooling/ToolPageLayout";
 
 export const metadata = {
@@ -9,7 +9,7 @@ export const metadata = {
 export default function GltfViewerPage() {
   return (
     <ToolPageLayout>
-      <GltfViewerClient />
+      <LazyGltfViewerClient />
     </ToolPageLayout>
   );
 }
