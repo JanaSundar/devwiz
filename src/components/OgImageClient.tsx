@@ -169,7 +169,7 @@ export default function OgImageClient() {
     setTheme(newTheme);
     if (newTheme === "light") {
       setPalette({
-        bg: "#f5f2e0",
+        bg: "#efece0",
         text: "#1a1a18",
         muted: "#4a4a3e",
         accent: "#1e4d2b",

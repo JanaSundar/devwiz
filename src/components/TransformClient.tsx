@@ -17,9 +17,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
 import ToolHeader from "@/components/tooling/ToolHeader";
 import { useTransformWorker } from "@/hooks/useTransformWorker";
-import { safeParseJson } from "@/lib/utils";
 import { AI_TOOL_IDS, getTransformById, transforms } from "@/lib/registry";
-import { cn } from "@/lib/utils";
+import { cn, safeParseJson } from "@/lib/utils";
 
 const MAX_TRANSFORM_INPUT = 1.5 * 1024 * 1024; // 1.5MB
 const MAX_SVG_FILE_SIZE = 1024 * 1024; // 1MB for upload
@@ -37,6 +36,9 @@ export default function TransformClient() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isFormattingSvg, setIsFormattingSvg] = useState(false);
+
+  // SOAP to REST target format
+  const [soapTarget, setSoapTarget] = useState("javascript");
 
   // SVGR Specific Options
   const [svgrOptions, setSvgrOptions] = useState({
@@ -66,7 +68,7 @@ export default function TransformClient() {
   }, [tool, router]);
 
   const executeTransform = useCallback(
-    async (val: string, opts = svgrOptions) => {
+    async (val: string, opts?: Record<string, unknown>) => {
       const currentReq = ++requestCntRef.current;
 
       if (!val.trim()) {
@@ -87,7 +89,11 @@ export default function TransformClient() {
             }
           : undefined;
 
-        const r = await transform(toolId, val, onStream, opts);
+        const optsToUse =
+          toolId === "soap-to-rest"
+            ? { ...opts, target: opts?.target ?? soapTarget }
+            : (opts ?? svgrOptions);
+        const r = await transform(toolId, val, onStream, optsToUse);
         if (currentReq === requestCntRef.current) {
           let finalOutput = r.output;
 
@@ -104,7 +110,7 @@ export default function TransformClient() {
         }
       }, delay);
     },
-    [toolId, transform, tool, svgrOptions],
+    [toolId, transform, tool, svgrOptions, soapTarget],
   );
 
   const openSettings = useCallback(() => {
@@ -358,6 +364,28 @@ export default function TransformClient() {
         </div>
       )}
 
+      {/* SOAP to REST target selector */}
+      {toolId === "soap-to-rest" && (
+        <div className="px-4 md:px-6 py-2.5 border-b border-border bg-bg-secondary/50 flex flex-wrap items-center gap-2 text-xs shrink-0">
+          <span className="text-txt-muted font-medium mr-1">Output:</span>
+          <select
+            className="bg-bg-primary border border-border rounded-lg px-3 py-1.5 text-xs text-txt focus:outline-none focus:border-accent/40 tr-smooth cursor-pointer"
+            value={soapTarget}
+            onChange={(e) => {
+              setSoapTarget(e.target.value);
+              void executeTransform(input, { target: e.target.value });
+            }}
+          >
+            <option value="curl">cURL</option>
+            <option value="javascript">JavaScript (fetch)</option>
+            <option value="node-axios">Node Axios</option>
+            <option value="node-http">Node HTTP</option>
+            <option value="python">Python (requests)</option>
+            <option value="python-http">Python (urllib)</option>
+          </select>
+        </div>
+      )}
+
       {/* SVG to JSX options bar */}
       {toolId === "svg-to-jsx" && (
         <div className="px-4 md:px-6 py-2.5 border-b border-border bg-bg-secondary/50 flex flex-wrap items-center gap-2 text-xs shrink-0">
@@ -379,7 +407,10 @@ export default function TransformClient() {
                   ] as boolean),
                 };
                 setSvgrOptions(newOpts);
-                void executeTransform(input, newOpts);
+                void executeTransform(
+                  input,
+                  newOpts as unknown as Record<string, unknown>,
+                );
               }}
               className={cn(
                 "px-2.5 py-1 rounded-lg border tr-smooth",
@@ -405,7 +436,10 @@ export default function TransformClient() {
                 expandProps: e.target.value as "none" | "start" | "end",
               };
               setSvgrOptions(newOpts);
-              void executeTransform(input, newOpts);
+              void executeTransform(
+                input,
+                newOpts as unknown as Record<string, unknown>,
+              );
             }}
           >
             <option value="none">None</option>
@@ -444,7 +478,9 @@ export default function TransformClient() {
                   ? "SVG"
                   : toolId === "tailwind-to-css"
                     ? "Tailwind"
-                    : "INPUT"}
+                    : toolId === "soap-to-rest"
+                      ? "SOAP"
+                      : "INPUT"}
               </span>
               <span className="text-txt-muted/50 truncate">
                 — {tool.inputLabel}
@@ -492,7 +528,9 @@ export default function TransformClient() {
                   ? "React JSX"
                   : toolId === "tailwind-to-css"
                     ? "CSS"
-                    : "OUTPUT"}
+                    : toolId === "soap-to-rest"
+                      ? "REST"
+                      : "OUTPUT"}
               </span>
               <span className="text-txt-muted/50 truncate">
                 — {tool.outputLabel}
@@ -511,7 +549,15 @@ export default function TransformClient() {
             <div className="flex-1 min-h-0 rounded-b-xl border border-t-0 border-border bg-bg-secondary overflow-hidden flex flex-col">
               <CodeEditor
                 value={output}
-                language={tool.outputLang}
+                language={
+                  toolId === "soap-to-rest"
+                    ? soapTarget.startsWith("python")
+                      ? "python"
+                      : soapTarget === "curl"
+                        ? "shell"
+                        : "javascript"
+                    : tool.outputLang
+                }
                 readOnly
                 placeholder={
                   toolId === "svg-to-jsx"
