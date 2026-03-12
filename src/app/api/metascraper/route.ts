@@ -3,6 +3,7 @@ import metascraperDescription from "metascraper-description";
 import metascraperImage from "metascraper-image";
 import metascraperTitle from "metascraper-title";
 import { NextResponse } from "next/server";
+import { apiError, parseJsonBody, requirePost } from "@/lib/api";
 
 export const runtime = "nodejs";
 
@@ -13,24 +14,24 @@ const scraper = metascraper([
 ]);
 
 export async function POST(req: Request) {
-  try {
-    const { url } = await req.json();
+  const methodErr = requirePost(req);
+  if (methodErr) return methodErr;
 
+  const parsed = await parseJsonBody<{ url?: string }>(req);
+  if (parsed.error) return parsed.error;
+
+  const { url } = parsed.data;
+
+  try {
     if (!url || typeof url !== "string") {
-      return NextResponse.json(
-        { error: "A valid URL is required." },
-        { status: 400 },
-      );
+      return apiError("A valid URL is required.", 400);
     }
 
     let targetUrl: URL;
     try {
       targetUrl = new URL(url);
     } catch {
-      return NextResponse.json(
-        { error: "Invalid URL format." },
-        { status: 400 },
-      );
+      return apiError("Invalid URL format.", 400);
     }
 
     const response = await fetch(targetUrl.toString(), {
@@ -44,10 +45,7 @@ export async function POST(req: Request) {
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: `Failed to fetch URL: ${response.status}` },
-        { status: 400 },
-      );
+      return apiError(`Failed to fetch URL: ${response.status}`, 400);
     }
 
     const html = await response.text();
@@ -58,12 +56,9 @@ export async function POST(req: Request) {
       metadata,
     });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to scrape metadata.",
-      },
-      { status: 500 },
+    return apiError(
+      error instanceof Error ? error.message : "Failed to scrape metadata.",
+      500,
     );
   }
 }

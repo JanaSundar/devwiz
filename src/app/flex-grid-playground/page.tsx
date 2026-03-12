@@ -1,4 +1,4 @@
-import FlexGridPlaygroundClient from "@/components/FlexGridPlaygroundClient";
+import LazyFlexGridPlaygroundClient from "@/components/LazyFlexGridPlaygroundClient";
 import ToolPageLayout from "@/components/tooling/ToolPageLayout";
 import { constructMetadata } from "@/lib/metadata";
 
@@ -12,7 +12,7 @@ export const metadata = constructMetadata({
 export default function FlexGridPlaygroundPage() {
   return (
     <ToolPageLayout>
-      <FlexGridPlaygroundClient />
+      <LazyFlexGridPlaygroundClient />
     </ToolPageLayout>
   );
 }

@@ -1,6 +1,7 @@
 import { createHash, getHashes } from "node:crypto";
 import { hash as bcryptHash, compare } from "bcryptjs";
 import { NextResponse } from "next/server";
+import { apiError, parseJsonBody, requirePost } from "@/lib/api";
 
 export const runtime = "nodejs";
 
@@ -22,8 +23,15 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const methodErr = requirePost(req);
+  if (methodErr) return methodErr;
+
+  const parsed = await parseJsonBody<Record<string, unknown>>(req);
+  if (parsed.error) return parsed.error;
+
+  const body = parsed.data;
+
   try {
-    const body = await req.json();
     const action = (body?.action ?? "") as Action;
 
     if (action === "digest") {
@@ -154,13 +162,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ valid });
     }
 
-    return NextResponse.json({ error: "Invalid action." }, { status: 400 });
+    return apiError("Invalid action.", 400);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Hash request failed.",
-      },
-      { status: 500 },
+    return apiError(
+      error instanceof Error ? error.message : "Hash request failed.",
+      500,
     );
   }
 }

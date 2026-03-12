@@ -32,7 +32,7 @@ export default function HomePage() {
     !filter.trim() || "readme generator".includes(filter.toLowerCase());
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <main className="flex-1 overflow-y-auto">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="flex items-start justify-between mb-8">
           <div>
@@ -58,6 +58,7 @@ export default function HomePage() {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Search tools..."
+            aria-label="Search tools"
             className="w-full pl-11 pr-4 py-3 text-sm rounded-xl bg-bg-secondary border border-border text-txt placeholder:text-txt-muted focus:outline-none focus:border-accent/40 tr-smooth"
           />
         </div>
@@ -140,6 +141,6 @@ export default function HomePage() {
           </p>
         </footer>
       </div>
-    </div>
+    </main>
   );
 }

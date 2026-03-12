@@ -54,6 +54,15 @@ export default function Sidebar() {
     return () => window.removeEventListener("open-settings", handler);
   }, []);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", onEscape);
+    return () => document.removeEventListener("keydown", onEscape);
+  }, [mobileOpen]);
+
   const showLabels = !collapsed;
 
   return (
@@ -62,6 +71,8 @@ export default function Sidebar() {
         <div
           className="fixed inset-0 bg-black/30 z-40 md:hidden"
           onClick={closeMobile}
+          aria-hidden="true"
+          role="presentation"
         />
       )}
 
@@ -202,6 +213,7 @@ function SidebarContent({
               }
               className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-bg-primary border border-border hover:border-txt/20 transition-all group scale-95"
               title="Open command menu (⌘K)"
+              aria-label="Open command menu (⌘K)"
             >
               <span className="text-[10px] font-black text-txt-muted group-hover:text-txt tracking-tighter">
                 ⌘K
@@ -239,6 +251,7 @@ function SidebarContent({
               placeholder="Search tools..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search tools"
               className="w-full pl-8 pr-3 py-2 text-xs rounded-lg bg-bg-primary border border-border text-txt placeholder:text-txt-muted focus:outline-none focus:border-accent/40 tr-smooth"
             />
           </div>
@@ -254,6 +267,7 @@ function SidebarContent({
             }
             className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-bg-primary border border-border text-[11px] text-txt-muted hover:text-txt hover:border-txt/20 tr-smooth"
             title="Search tools (⌘K)"
+            aria-label="Search tools (⌘K)"
           >
             <Search size={12} />
             <span>Search</span>
@@ -261,7 +275,10 @@ function SidebarContent({
         </div>
       )}
 
-      <nav className="flex-1 overflow-y-auto px-2 pb-2 space-y-1">
+      <nav
+        className="flex-1 overflow-y-auto px-2 pb-2 space-y-1"
+        aria-label="Main navigation"
+      >
         {/* Home */}
         <div className="mb-1">
           <Link
@@ -360,6 +377,7 @@ function SidebarContent({
       <div className="p-3 border-t border-border mt-auto shrink-0 space-y-2">
         <button
           onClick={() => setShowSettings(true)}
+          aria-label="API Settings"
           className={cn(
             "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs tr-smooth text-txt-muted hover:bg-glass-hover hover:text-txt w-full",
             !showLabels && "justify-center",

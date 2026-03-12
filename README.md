@@ -94,6 +94,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - Command Menu (`cmdk`)
 - Animations via `motion/react`
 - Biome for linting and formatting
+- Vitest + React Testing Library for unit tests
 - Serwist for service worker and PWA behavior
 
 ## Quick Start
@@ -134,6 +135,8 @@ pnpm start
 - **pnpm lint:fix**: auto-fix lint issues with Biome
 - **pnpm check**: run Biome checks across project
 - **pnpm format**: format project with Biome
+- **pnpm test**: run Vitest tests (watch mode)
+- **pnpm test:run**: run Vitest tests once (CI)
 - **pnpm precommit**: run lint-staged (Biome check on staged files)
 
 ## Configuration
@@ -161,6 +164,7 @@ src/
 	lib/                # Registry, routing, helpers, utilities
 	hooks/              # Shared hooks
 	workers/            # Web workers (transform pipelines)
+	test/               # Vitest setup
 ```
 
 Core entry points:
@@ -173,6 +177,7 @@ Core entry points:
 
 - Type-safe codebase with TypeScript
 - Biome-driven formatting and lint checks
+- Vitest + React Testing Library for unit tests
 - Modular components for easier maintenance and feature growth
 
 ## Contribution
@@ -185,6 +190,7 @@ Core entry points:
 ```bash
 pnpm check
 pnpm lint
+pnpm test:run
 ```
 
 5. Open a pull request with screenshots or short videos for UI changes.

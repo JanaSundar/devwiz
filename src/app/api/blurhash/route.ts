@@ -1,10 +1,16 @@
 import { encode } from "blurhash";
 import { NextResponse } from "next/server";
 import sharp from "sharp";
+import { apiError, requirePost } from "@/lib/api";
 
 export const runtime = "nodejs";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 export async function POST(req: Request) {
+  const methodErr = requirePost(req);
+  if (methodErr) return methodErr;
+
   try {
     const formData = await req.formData();
     const file = formData.get("image");
@@ -12,10 +18,11 @@ export async function POST(req: Request) {
     const yInput = Number(formData.get("yComp") ?? 3);
 
     if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: "Image file is required." },
-        { status: 400 },
-      );
+      return apiError("Image file is required.", 400);
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return apiError("Image file must be less than 10MB.", 400);
     }
 
     const xComp = Math.min(
@@ -57,14 +64,17 @@ export async function POST(req: Request) {
       yComp,
     });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate BlurHash.",
-      },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "Failed to generate BlurHash.";
+    if (
+      message.includes("unsupported image format") ||
+      message.includes("Input")
+    ) {
+      return apiError(
+        "Image format not supported. Use JPEG, PNG, or WebP.",
+        400,
+      );
+    }
+    return apiError(message, 500);
   }
 }

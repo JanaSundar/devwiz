@@ -1,6 +1,7 @@
 import { createHuggingFace } from "@ai-sdk/huggingface";
 import { streamText } from "ai";
 import type { NextRequest } from "next/server";
+import { apiError, parseJsonBody, requirePost } from "@/lib/api";
 
 const DEFAULT_MODEL = "Qwen/Qwen2.5-Coder-32B-Instruct";
 
@@ -45,35 +46,35 @@ const TOOL_PROMPTS: Record<
 };
 
 export async function POST(req: NextRequest) {
-  try {
-    const { toolId, input, apiKey, model } = await req.json();
+  const methodErr = requirePost(req);
+  if (methodErr) return methodErr;
 
+  const parsed = await parseJsonBody<{
+    toolId?: string;
+    input?: string;
+    apiKey?: string;
+    model?: string;
+  }>(req);
+  if (parsed.error) return parsed.error;
+
+  const { toolId, input, apiKey, model } = parsed.data;
+
+  try {
     if (!apiKey) {
-      return new Response(
-        JSON.stringify({
-          error: "Hugging Face token is required. Set it in Settings.",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
+      return apiError(
+        "Hugging Face token is required. Set it in Settings.",
+        400,
       );
     }
 
-    const promptConfig = TOOL_PROMPTS[toolId];
+    const promptConfig = toolId ? TOOL_PROMPTS[toolId] : undefined;
     if (!promptConfig) {
-      return new Response(
-        JSON.stringify({ error: `Unknown AI tool: ${toolId}` }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return apiError(`Unknown AI tool: ${toolId ?? "undefined"}`, 400);
     }
 
     const selectedModel = model || DEFAULT_MODEL;
     const hf = createHuggingFace({ apiKey });
-    const { prompt, system, temperature } = promptConfig(input);
+    const { prompt, system, temperature } = promptConfig(input ?? "");
 
     const result = streamText({
       model: hf(selectedModel),
@@ -86,9 +87,6 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[AI Route Error]", message);
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return apiError(message, 500);
   }
 }
