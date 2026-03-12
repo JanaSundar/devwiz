@@ -36,10 +36,20 @@ const METHODS = [
 const BODY_TYPES = [
   "None",
   "JSON",
+  "XML",
   "Form Data",
   "Form URL Encoded",
   "Raw",
 ] as const;
+
+const SOAP_ENVELOPE_PLACEHOLDER = `<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetData xmlns="http://example.com/service">
+      <param>value</param>
+    </GetData>
+  </soap:Body>
+</soap:Envelope>`;
 const AUTH_TYPES = ["None", "Bearer Token", "Basic Auth", "API Key"] as const;
 const REQUEST_TABS = ["Params", "Headers", "Body", "Auth"] as const;
 const RESPONSE_TABS = ["Body", "Headers"] as const;
@@ -338,6 +348,62 @@ export default function ApiPlaygroundClient() {
   const hasBody = !["GET", "HEAD"].includes(method);
   const showBodySection = hasBody && bodyType !== "None";
 
+  const setBodyTypeWithHeaders = useCallback(
+    (next: (typeof BODY_TYPES)[number]) => {
+      setBodyType(next);
+      if (next === "XML") {
+        setBody(SOAP_ENVELOPE_PLACEHOLDER);
+        setHeaders((prev) => {
+          const ct = prev.find(
+            (h) => h.key.toLowerCase().trim() === "content-type",
+          );
+          if (ct && ct.value.includes("json")) {
+            return prev.map((h) =>
+              h.key.toLowerCase().trim() === "content-type"
+                ? { ...h, value: "text/xml" }
+                : h,
+            );
+          }
+          if (!ct) {
+            return [
+              ...prev,
+              { id: generateId(), key: "Content-Type", value: "text/xml" },
+            ];
+          }
+          return prev;
+        });
+      } else if (next === "JSON") {
+        setBody(DEFAULT_BODY);
+        setHeaders((prev) => {
+          const ct = prev.find(
+            (h) => h.key.toLowerCase().trim() === "content-type",
+          );
+          if (ct && ct.value.includes("xml")) {
+            return prev.map((h) =>
+              h.key.toLowerCase().trim() === "content-type"
+                ? { ...h, value: "application/json" }
+                : h,
+            );
+          }
+          if (!ct) {
+            return [
+              ...prev,
+              {
+                id: generateId(),
+                key: "Content-Type",
+                value: "application/json",
+              },
+            ];
+          }
+          return prev;
+        });
+      } else if (next === "Raw") {
+        setBody("");
+      }
+    },
+    [],
+  );
+
   const addRow = useCallback(
     (setter: React.Dispatch<React.SetStateAction<KeyValueRow[]>>) => {
       setter((prev) => [...prev, { id: generateId(), key: "", value: "" }]);
@@ -445,6 +511,7 @@ export default function ApiPlaygroundClient() {
     | "raw" => {
     if (bodyType === "None" || !hasBody) return "json";
     if (bodyType === "JSON") return "json";
+    if (bodyType === "XML") return "raw";
     if (bodyType === "Form Data") return "form";
     if (bodyType === "Form URL Encoded") return "formUrlEncoded";
     return "raw";
@@ -484,7 +551,8 @@ export default function ApiPlaygroundClient() {
       auth: buildAuth(),
       bodyType: buildBodyType(),
       body:
-        showBodySection && (bodyType === "JSON" || bodyType === "Raw")
+        showBodySection &&
+        (bodyType === "JSON" || bodyType === "XML" || bodyType === "Raw")
           ? body
           : null,
       formFields:
@@ -583,7 +651,7 @@ export default function ApiPlaygroundClient() {
       .join(" \\\n");
     let bodyPart = "";
     if (showBodySection) {
-      if (bodyType === "JSON" || bodyType === "Raw") {
+      if (bodyType === "JSON" || bodyType === "XML" || bodyType === "Raw") {
         bodyPart = body.trim()
           ? `  -d '${body.replace(/'/g, "'\\''").replace(/\n/g, " ")}'`
           : "";
@@ -813,37 +881,50 @@ export default function ApiPlaygroundClient() {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 min-h-0 overflow-auto p-4">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-4">
             {requestTab === "Params" && (
-              <KeyValueTable
-                rows={params}
-                onAdd={() => addRow(setParams)}
-                onRemove={(id) => removeRow(setParams, id)}
-                onUpdate={(id, f, v) => updateRow(setParams, id, f, v)}
-                keyPlaceholder="Query param"
-                valuePlaceholder="Value"
-              />
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <KeyValueTable
+                  rows={params}
+                  onAdd={() => addRow(setParams)}
+                  onRemove={(id) => removeRow(setParams, id)}
+                  onUpdate={(id, f, v) => updateRow(setParams, id, f, v)}
+                  keyPlaceholder="Query param"
+                  valuePlaceholder="Value"
+                />
+              </div>
             )}
             {requestTab === "Headers" && (
-              <KeyValueTable
-                rows={headers}
-                onAdd={() => addRow(setHeaders)}
-                onRemove={(id) => removeRow(setHeaders, id)}
-                onUpdate={(id, f, v) => updateRow(setHeaders, id, f, v)}
-                keyPlaceholder="Header name"
-                valuePlaceholder="Value"
-              />
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <KeyValueTable
+                  rows={headers}
+                  onAdd={() => addRow(setHeaders)}
+                  onRemove={(id) => removeRow(setHeaders, id)}
+                  onUpdate={(id, f, v) => updateRow(setHeaders, id, f, v)}
+                  keyPlaceholder="Header name"
+                  valuePlaceholder="Value"
+                />
+              </div>
             )}
             {requestTab === "Body" && (
-              <div className="space-y-3">
+              <div
+                className={cn(
+                  "flex flex-col gap-3",
+                  hasBody &&
+                    (bodyType === "JSON" ||
+                      bodyType === "XML" ||
+                      bodyType === "Raw") &&
+                    "flex-1 min-h-0",
+                )}
+              >
                 {hasBody ? (
                   <>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
                       {BODY_TYPES.map((t) => (
                         <button
                           key={t}
                           type="button"
-                          onClick={() => setBodyType(t)}
+                          onClick={() => setBodyTypeWithHeaders(t)}
                           className={cn(
                             "px-2.5 py-1 rounded text-[11px] tr-smooth",
                             bodyType === t
@@ -856,7 +937,7 @@ export default function ApiPlaygroundClient() {
                       ))}
                     </div>
                     {bodyType === "JSON" && (
-                      <div className="h-32 rounded-xl border border-border overflow-hidden bg-bg-primary">
+                      <div className="flex-1 min-h-0 rounded-xl border border-border overflow-hidden bg-bg-primary">
                         <CodeEditor
                           value={body}
                           onChange={setBody}
@@ -865,13 +946,22 @@ export default function ApiPlaygroundClient() {
                         />
                       </div>
                     )}
+                    {bodyType === "XML" && (
+                      <div className="flex-1 min-h-0 rounded-xl border border-border overflow-hidden bg-bg-primary">
+                        <CodeEditor
+                          value={body}
+                          onChange={setBody}
+                          language="xml"
+                          placeholder={SOAP_ENVELOPE_PLACEHOLDER}
+                        />
+                      </div>
+                    )}
                     {bodyType === "Raw" && (
-                      <div className="h-32 rounded-xl border border-border overflow-hidden bg-bg-primary">
+                      <div className="flex-1 min-h-0 rounded-xl border border-border overflow-hidden bg-bg-primary">
                         <CodeEditor
                           value={body}
                           onChange={setBody}
                           language="markdown"
-                          placeholder="Raw body..."
                         />
                       </div>
                     )}
@@ -896,93 +986,95 @@ export default function ApiPlaygroundClient() {
               </div>
             )}
             {requestTab === "Auth" && (
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {AUTH_TYPES.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setAuthType(t)}
-                      className={cn(
-                        "px-2.5 py-1 rounded-lg text-[11px] tr-smooth",
-                        authType === t
-                          ? "bg-accent/15 text-accent border border-accent/30"
-                          : "btn-glass hover:border-accent/20",
-                      )}
-                    >
-                      {t}
-                    </button>
-                  ))}
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {AUTH_TYPES.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setAuthType(t)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-lg text-[11px] tr-smooth",
+                          authType === t
+                            ? "bg-accent/15 text-accent border border-accent/30"
+                            : "btn-glass hover:border-accent/20",
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                  {authType === "Bearer Token" && (
+                    <Input
+                      value={bearerToken}
+                      onChange={(e) => setBearerToken(e.target.value)}
+                      placeholder="Bearer token"
+                      className="font-mono text-[12px] h-8"
+                    />
+                  )}
+                  {authType === "Basic Auth" && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={basicUser}
+                        onChange={(e) => setBasicUser(e.target.value)}
+                        placeholder="Username"
+                        className="font-mono text-[12px] h-8 flex-1"
+                      />
+                      <Input
+                        value={basicPass}
+                        onChange={(e) => setBasicPass(e.target.value)}
+                        placeholder="Password"
+                        type="password"
+                        className="font-mono text-[12px] h-8 flex-1"
+                      />
+                    </div>
+                  )}
+                  {authType === "API Key" && (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          value={apiKeyName}
+                          onChange={(e) => setApiKeyName(e.target.value)}
+                          placeholder="Header/Param name"
+                          className="font-mono text-[12px] h-8 flex-1"
+                        />
+                        <Input
+                          value={apiKeyValue}
+                          onChange={(e) => setApiKeyValue(e.target.value)}
+                          placeholder="Value"
+                          className="font-mono text-[12px] h-8 flex-1"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setApiKeyAddTo("header")}
+                          className={cn(
+                            "px-2 py-1 rounded text-[11px]",
+                            apiKeyAddTo === "header"
+                              ? "bg-accent/15 text-accent"
+                              : "btn-glass",
+                          )}
+                        >
+                          Add to Header
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setApiKeyAddTo("query")}
+                          className={cn(
+                            "px-2 py-1 rounded text-[11px]",
+                            apiKeyAddTo === "query"
+                              ? "bg-accent/15 text-accent"
+                              : "btn-glass",
+                          )}
+                        >
+                          Add to Query
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {authType === "Bearer Token" && (
-                  <Input
-                    value={bearerToken}
-                    onChange={(e) => setBearerToken(e.target.value)}
-                    placeholder="Bearer token"
-                    className="font-mono text-[12px] h-8"
-                  />
-                )}
-                {authType === "Basic Auth" && (
-                  <div className="flex gap-2">
-                    <Input
-                      value={basicUser}
-                      onChange={(e) => setBasicUser(e.target.value)}
-                      placeholder="Username"
-                      className="font-mono text-[12px] h-8 flex-1"
-                    />
-                    <Input
-                      value={basicPass}
-                      onChange={(e) => setBasicPass(e.target.value)}
-                      placeholder="Password"
-                      type="password"
-                      className="font-mono text-[12px] h-8 flex-1"
-                    />
-                  </div>
-                )}
-                {authType === "API Key" && (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        value={apiKeyName}
-                        onChange={(e) => setApiKeyName(e.target.value)}
-                        placeholder="Header/Param name"
-                        className="font-mono text-[12px] h-8 flex-1"
-                      />
-                      <Input
-                        value={apiKeyValue}
-                        onChange={(e) => setApiKeyValue(e.target.value)}
-                        placeholder="Value"
-                        className="font-mono text-[12px] h-8 flex-1"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setApiKeyAddTo("header")}
-                        className={cn(
-                          "px-2 py-1 rounded text-[11px]",
-                          apiKeyAddTo === "header"
-                            ? "bg-accent/15 text-accent"
-                            : "btn-glass",
-                        )}
-                      >
-                        Add to Header
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setApiKeyAddTo("query")}
-                        className={cn(
-                          "px-2 py-1 rounded text-[11px]",
-                          apiKeyAddTo === "query"
-                            ? "bg-accent/15 text-accent"
-                            : "btn-glass",
-                        )}
-                      >
-                        Add to Query
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>

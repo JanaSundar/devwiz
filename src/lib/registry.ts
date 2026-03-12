@@ -170,7 +170,8 @@ export const transforms: TransformConfig[] = [
     outputLabel: "Response",
     inputLang: "markdown",
     outputLang: "json",
-    placeholder: "Send HTTP requests with CORS bypass via proxy",
+    placeholder:
+      "Send HTTP requests with CORS bypass via proxy. Supports JSON, XML/SOAP, form data.",
   },
   {
     id: "faker-js",
