@@ -43,7 +43,27 @@ const BEZIER_PRESETS = [
     p1: { x: 0.42, y: 0 },
     p2: { x: 0.58, y: 1 },
   },
+  {
+    key: "ease-out-expo",
+    label: "ease-out-expo",
+    p1: { x: 0.16, y: 1 },
+    p2: { x: 0.3, y: 1 },
+  },
+  {
+    key: "ease-out-back",
+    label: "ease-out-back",
+    p1: { x: 0.34, y: 1.56 },
+    p2: { x: 0.64, y: 1 },
+  },
 ] as const;
+
+// Extended y range so overshoot presets (ease-out-back, etc.) keep handles visible
+const Y_MIN = -0.5;
+const Y_MAX = 1.6;
+const Y_RANGE = Y_MAX - Y_MIN;
+
+const DURATION_PRESETS = [0.2, 0.3, 0.5, 1, 1.5, 2] as const;
+const DELAY_PRESETS = [0, 0.1, 0.2, 0.3, 0.5] as const;
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
@@ -52,7 +72,7 @@ function clamp(value: number, min: number, max: number) {
 function pointToSvg(point: BezierPoint) {
   return {
     x: PADDING + point.x * PLOT_SIZE,
-    y: PADDING + (1 - point.y) * PLOT_SIZE,
+    y: PADDING + ((Y_MAX - point.y) / Y_RANGE) * PLOT_SIZE,
   };
 }
 
@@ -66,14 +86,12 @@ function svgToPoint(
   const svgX = (clientX - rect.left) / scaleX;
   const svgY = (clientY - rect.top) / scaleY;
 
-  // nx is strictly 0-1 as required by CSS
   const nx = (svgX - PADDING) / PLOT_SIZE;
-  // ny is also clamped to 0-1 to keep handles within viewport/grid bounds
-  const ny = 1 - (svgY - PADDING) / PLOT_SIZE;
+  const ny = Y_MAX - ((svgY - PADDING) / PLOT_SIZE) * Y_RANGE;
 
   return {
     x: clamp(nx, 0, 1),
-    y: clamp(ny, 0, 1),
+    y: clamp(ny, Y_MIN, Y_MAX),
   };
 }
 
@@ -81,22 +99,35 @@ export default function CubicBezierClient() {
   const [p1, setP1] = useState<BezierPoint>({ x: 0.25, y: 0.1 });
   const [p2, setP2] = useState<BezierPoint>({ x: 0.25, y: 1 });
   const [activeHandle, setActiveHandle] = useState<"p1" | "p2" | null>(null);
-  const [copiedKey, setCopiedKey] = useState<"css" | "motion" | null>(null);
+  const [copiedKey, setCopiedKey] = useState<"css" | "motion" | "full" | null>(
+    null,
+  );
+  const [duration, setDuration] = useState(1.5);
+  const [delay, setDelay] = useState(0);
   const [previewTravelX, setPreviewTravelX] = useState(240);
   const [showVelocity, setShowVelocity] = useState(false);
   const [showProjection, setShowProjection] = useState(false);
   // No more debounce needed for the motion values, we'll use raw p1/p2 for frame-perfect tracking
   const time = useTime();
 
-  // A simple but effective cubic-bezier solver for the preview
-  // Based on the standard 0-1 time -> 0-1 progress mapping
-  const easedX = useTransform(time, (t: number) => {
-    // 1.6s forward, 1.6s back = 3.2s total cycle
-    const cycle = 3200;
-    const progress = (t % cycle) / 1600;
-    const phase = progress > 1 ? 2 - progress : progress;
+  // Cycle: delay → animate 0→1 (duration) → delay → animate 1→0 (duration)
+  const delayMs = delay * 1000;
+  const durationMs = duration * 1000;
+  const cycleMs = (delayMs + durationMs) * 2;
 
-    // For adaptive feel, we'll use a standard formula
+  const getPhase = (t: number) => {
+    const mod = t % cycleMs;
+    const half = delayMs + durationMs;
+    if (mod < delayMs) return 0;
+    if (mod < half) return (mod - delayMs) / durationMs;
+    if (mod < half + delayMs) return 1;
+    return 1 - (mod - half - delayMs) / durationMs;
+  };
+
+  // Cubic-bezier solver for the preview
+  const easedX = useTransform(time, (t: number) => {
+    const phase = getPhase(t);
+
     const t_val = phase;
     const cx = 3 * p1.x;
     const bx = 3 * (p2.x - p1.x) - cx;
@@ -119,57 +150,91 @@ export default function CubicBezierClient() {
 
     const easedY = ((ay * currentT + by) * currentT + cy) * currentT;
 
-    // Map easedY to visual range
-    return PREVIEW_SIDE_GAP + easedY * (previewTravelX - PREVIEW_SIDE_GAP);
-  });
-
-  const easedPathPoint = useTransform(time, (t: number) => {
-    const cycle = 3200;
-    const progress = (t % cycle) / 1600;
-    const phase = progress > 1 ? 2 - progress : progress;
-
-    const t_val = phase;
-    const cx = 3 * p1.x;
-    const bx = 3 * (p2.x - p1.x) - cx;
-    const ax = 1 - cx - bx;
-
-    const cy = 3 * p1.y;
-    const by = 3 * (p2.y - p1.y) - cy;
-    const ay = 1 - cy - by;
-
-    let currentT = t_val;
-    for (let i = 0; i < 5; i++) {
-      const x_estimate = ((ax * currentT + bx) * currentT + cx) * currentT;
-      const dx_dt = (3 * ax * currentT + 2 * bx) * currentT + cx;
-      if (Math.abs(dx_dt) < 1e-6) break;
-      currentT -= (x_estimate - t_val) / dx_dt;
-      currentT = clamp(currentT, 0, 1);
-    }
-
-    const easedY = ((ay * currentT + by) * currentT + cy) * currentT;
-    const easedX = ((ax * currentT + bx) * currentT + cx) * currentT;
-
-    return {
-      x: PADDING + easedX * PLOT_SIZE,
-      y: PADDING + (1 - easedY) * PLOT_SIZE,
-    };
+    // Map easedY to visual range; clamp so dot stays fully visible within preview area
+    const x = PREVIEW_SIDE_GAP + easedY * (previewTravelX - PREVIEW_SIDE_GAP);
+    return clamp(x, PREVIEW_SIDE_GAP, previewTravelX);
   });
 
   const s1 = pointToSvg(p1);
   const s2 = pointToSvg(p2);
+
+  const isLinear =
+    Math.abs(p1.x) < 0.01 &&
+    Math.abs(p1.y) < 0.01 &&
+    Math.abs(p2.x - 1) < 0.01 &&
+    Math.abs(p2.y - 1) < 0.01;
+
+  // Dot position: for linear use straight-line interpolation; otherwise cubic bezier
+  const easedPathPoint = useTransform(time, (t: number) => {
+    const phase = getPhase(t);
+
+    if (isLinear) {
+      // Straight line: bottom-left → top-right
+      return {
+        x: PADDING + phase * PLOT_SIZE,
+        y: PADDING + PLOT_SIZE - phase * PLOT_SIZE,
+      };
+    }
+
+    const u = 1 - phase;
+    const P0x = PADDING;
+    const P0y = PADDING + PLOT_SIZE;
+    const P3x = PADDING + PLOT_SIZE;
+    const P3y = PADDING;
+
+    const x =
+      u * u * u * P0x +
+      3 * u * u * phase * s1.x +
+      3 * u * phase * phase * s2.x +
+      phase * phase * phase * P3x;
+    const y =
+      u * u * u * P0y +
+      3 * u * u * phase * s1.y +
+      3 * u * phase * phase * s2.y +
+      phase * phase * phase * P3y;
+
+    return { x, y };
+  });
 
   const svgBoundsRef = useRef<DOMRect | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const previewLaneRef = useRef<HTMLDivElement | null>(null);
 
   const curvePath = useMemo(() => {
+    if (isLinear) {
+      return `M ${PADDING} ${PADDING + PLOT_SIZE} L ${PADDING + PLOT_SIZE} ${PADDING}`;
+    }
     return `M ${PADDING} ${PADDING + PLOT_SIZE} C ${s1.x} ${s1.y}, ${s2.x} ${s2.y}, ${PADDING + PLOT_SIZE} ${PADDING}`;
-  }, [s1, s2]);
+  }, [s1, s2, isLinear]);
+
+  const activePreset = useMemo(() => {
+    return BEZIER_PRESETS.find(
+      (preset) =>
+        p1.x.toFixed(2) === preset.p1.x.toFixed(2) &&
+        p1.y.toFixed(2) === preset.p1.y.toFixed(2) &&
+        p2.x.toFixed(2) === preset.p2.x.toFixed(2) &&
+        p2.y.toFixed(2) === preset.p2.y.toFixed(2),
+    )?.key;
+  }, [p1.x, p1.y, p2.x, p2.y]);
+
+  const cubicBezierValue = useMemo(() => {
+    const v = `cubic-bezier(${p1.x.toFixed(2)}, ${p1.y.toFixed(2)}, ${p2.x.toFixed(2)}, ${p2.y.toFixed(2)})`;
+    if (activePreset === "linear") return "linear";
+    if (activePreset === "ease") return "ease";
+    if (activePreset === "ease-in") return "ease-in";
+    if (activePreset === "ease-out") return "ease-out";
+    if (activePreset === "ease-in-out") return "ease-in-out";
+    return v;
+  }, [p1.x, p1.y, p2.x, p2.y, activePreset]);
 
   const cssOutput = useMemo(
-    () =>
-      `transition-timing-function: cubic-bezier(${p1.x.toFixed(2)}, ${p1.y.toFixed(2)}, ${p2.x.toFixed(2)}, ${p2.y.toFixed(2)});`,
-    [p1.x, p1.y, p2.x, p2.y],
+    () => `transition-timing-function: ${cubicBezierValue};`,
+    [cubicBezierValue],
+  );
+
+  const fullCssOutput = useMemo(
+    () => `transition: all ${duration}s ${cubicBezierValue} ${delay}s;`,
+    [cubicBezierValue, duration, delay],
   );
 
   const motionOutput = useMemo(
@@ -222,22 +287,12 @@ export default function CubicBezierClient() {
       const x = ((ax * t + bx) * t + cx) * t;
       const y = ((ay * t + by) * t + cy) * t;
       points.push({
-        x: PADDING + x * PLOT_SIZE,
-        y: PADDING + (1 - y) * PLOT_SIZE,
+        x: clamp(PADDING + x * PLOT_SIZE, PADDING, PADDING + PLOT_SIZE),
+        y: clamp(PADDING + (1 - y) * PLOT_SIZE, PADDING, PADDING + PLOT_SIZE),
       });
     }
     return points;
   }, [p1, p2, showProjection]);
-
-  const activePreset = useMemo(() => {
-    return BEZIER_PRESETS.find(
-      (preset) =>
-        p1.x.toFixed(2) === preset.p1.x.toFixed(2) &&
-        p1.y.toFixed(2) === preset.p1.y.toFixed(2) &&
-        p2.x.toFixed(2) === preset.p2.x.toFixed(2) &&
-        p2.y.toFixed(2) === preset.p2.y.toFixed(2),
-    )?.key;
-  }, [p1.x, p1.y, p2.x, p2.y]);
 
   useEffect(() => {
     if (!previewLaneRef.current) return;
@@ -245,10 +300,8 @@ export default function CubicBezierClient() {
     const lane = previewLaneRef.current;
     const updateTravel = () => {
       const width = lane.clientWidth;
-      const maxX = Math.max(
-        PREVIEW_SIDE_GAP,
-        width - PREVIEW_SIDE_GAP - PREVIEW_DOT_SIZE,
-      );
+      // Dot can touch right edge; max x = width - PREVIEW_DOT_SIZE so right edge = width
+      const maxX = Math.max(PREVIEW_SIDE_GAP, width - PREVIEW_DOT_SIZE);
       setPreviewTravelX(maxX);
     };
 
@@ -282,7 +335,7 @@ export default function CubicBezierClient() {
     setActiveHandle(handle);
   };
 
-  const copyText = async (text: string, key: "css" | "motion") => {
+  const copyText = async (text: string, key: "css" | "motion" | "full") => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedKey(key);
@@ -535,6 +588,49 @@ export default function CubicBezierClient() {
 
               <div className="h-px bg-border/50 my-1" />
 
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase tracking-wide text-txt-muted">
+                  Duration (s)
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {DURATION_PRESETS.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setDuration(d)}
+                      className={`rounded-md border px-2 py-0.5 text-[10px] tr-smooth ${
+                        duration === d
+                          ? "border-accent/40 bg-accent/10 text-accent"
+                          : "border-border bg-bg-primary text-txt-muted hover:text-txt"
+                      }`}
+                    >
+                      {d}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase tracking-wide text-txt-muted">
+                  Delay (s)
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {DELAY_PRESETS.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setDelay(d)}
+                      className={`rounded-md border px-2 py-0.5 text-[10px] tr-smooth ${
+                        delay === d
+                          ? "border-accent/40 bg-accent/10 text-accent"
+                          : "border-border bg-bg-primary text-txt-muted hover:text-txt"
+                      }`}
+                    >
+                      {d}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setShowVelocity(!showVelocity)}
@@ -565,14 +661,19 @@ export default function CubicBezierClient() {
               </div>
             </div>
             <p className="mt-2 text-[11px] text-txt-muted text-center italic">
-              cubic-bezier({p1.x.toFixed(2)}, {p1.y.toFixed(2)},{" "}
-              {p2.x.toFixed(2)}, {p2.y.toFixed(2)})
+              {cubicBezierValue}
             </p>
           </section>
 
           <section className="shrink-0 min-w-0 grid gap-2 rounded-2xl border border-border bg-bg-secondary p-2 sm:p-3">
             <CodeOutputCard
-              title="CSS"
+              title="Full CSS (duration + delay)"
+              value={fullCssOutput}
+              copied={copiedKey === "full"}
+              onCopy={() => copyText(fullCssOutput, "full")}
+            />
+            <CodeOutputCard
+              title="Timing Only"
               value={cssOutput}
               copied={copiedKey === "css"}
               onCopy={() => copyText(cssOutput, "css")}

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
 import ToolHeader from "@/components/tooling/ToolHeader";
 import { ToolPanel, ToolPanels } from "@/components/tooling/ToolPanels";
+import { safeParseJson } from "@/lib/utils";
 
 const TARGETS = [
   { key: "python", label: "Python (default)", language: "python" },
@@ -99,7 +100,9 @@ export default function CurlConverterClient() {
           signal: controller.signal,
         });
 
-        const data = await res.json();
+        const data = await safeParseJson<{ output?: string; error?: string }>(
+          res,
+        );
         if (!res.ok) {
           setOutput(
             `// Conversion failed\n${data.error ?? "Invalid curl command"}`,

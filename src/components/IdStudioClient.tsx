@@ -20,6 +20,11 @@ export default function IdStudioClient() {
     () => false,
   );
 
+  const [copiedId, setCopiedId] = useState<{
+    idx: number;
+    type: "uuid" | "nanoid" | "ulid";
+  } | null>(null);
+
   const ids = useMemo(() => {
     if (!isClient) {
       return [];
@@ -44,6 +49,18 @@ export default function IdStudioClient() {
       await navigator.clipboard.writeText(out);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+
+  const copyOne = async (
+    value: string,
+    idx: number,
+    type: "uuid" | "nanoid" | "ulid",
+  ) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedId({ idx, type });
+      setTimeout(() => setCopiedId(null), 1200);
     } catch {}
   };
 
@@ -101,18 +118,60 @@ export default function IdStudioClient() {
               key={idx}
               className="rounded-xl border border-border bg-bg-secondary p-3 font-mono text-xs space-y-2"
             >
-              <p>
-                <span className="text-txt-muted">UUID:</span>{" "}
-                <span className="text-txt break-all">{id.uuid}</span>
-              </p>
-              <p>
-                <span className="text-txt-muted">NanoID:</span>{" "}
-                <span className="text-txt break-all">{id.nanoid}</span>
-              </p>
-              <p>
-                <span className="text-txt-muted">ULID:</span>{" "}
-                <span className="text-txt break-all">{id.ulid}</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-txt-muted">UUID:</span>
+                <span className="min-w-0 flex-1 break-all text-txt">
+                  {id.uuid}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyOne(id.uuid, idx, "uuid")}
+                  className="shrink-0 rounded p-0.5 hover:bg-bg-primary"
+                  title="Copy UUID"
+                >
+                  {copiedId?.idx === idx && copiedId?.type === "uuid" ? (
+                    <Check size={12} className="text-success" />
+                  ) : (
+                    <Copy size={12} className="text-txt-muted" />
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-txt-muted">NanoID:</span>
+                <span className="min-w-0 flex-1 break-all text-txt">
+                  {id.nanoid}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyOne(id.nanoid, idx, "nanoid")}
+                  className="shrink-0 rounded p-0.5 hover:bg-bg-primary"
+                  title="Copy NanoID"
+                >
+                  {copiedId?.idx === idx && copiedId?.type === "nanoid" ? (
+                    <Check size={12} className="text-success" />
+                  ) : (
+                    <Copy size={12} className="text-txt-muted" />
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-txt-muted">ULID:</span>
+                <span className="min-w-0 flex-1 break-all text-txt">
+                  {id.ulid}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyOne(id.ulid, idx, "ulid")}
+                  className="shrink-0 rounded p-0.5 hover:bg-bg-primary"
+                  title="Copy ULID"
+                >
+                  {copiedId?.idx === idx && copiedId?.type === "ulid" ? (
+                    <Check size={12} className="text-success" />
+                  ) : (
+                    <Copy size={12} className="text-txt-muted" />
+                  )}
+                </button>
+              </div>
             </div>
           ))}
         </div>

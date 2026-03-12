@@ -1,6 +1,7 @@
 import { transform } from "@svgr/core";
 import jsxPlugin from "@svgr/plugin-jsx";
 import svgoPlugin from "@svgr/plugin-svgo";
+import prettier from "prettier";
 import { NextResponse } from "next/server";
 import "@babel/preset-typescript"; // Explicitly import for Turbopack to find it
 
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const jsx = await transform(
+    let jsx = await transform(
       input,
       {
         icon: options.icon ?? false,
@@ -24,7 +25,8 @@ export async function POST(req: Request) {
         svgo: options.svgo ?? true,
         svgoConfig: options.svgoConfig ?? undefined,
         expandProps: options.expandProps || "end",
-        replaceAttrValues: options.replaceAttrValues || undefined,
+        replaceAttrValues: options.replaceAttrValues ?? undefined,
+        prettier: false,
         plugins: [
           // Order determines the pipeline execution order
           svgoPlugin,
@@ -33,6 +35,19 @@ export async function POST(req: Request) {
       },
       { componentName: "SvgComponent" },
     );
+
+    try {
+      jsx = await prettier.format(jsx, {
+        parser: options.typescript ? "babel-ts" : "babel",
+        semi: true,
+        singleQuote: false,
+        tabWidth: 2,
+        useTabs: false,
+        printWidth: 80,
+      });
+    } catch {
+      // Prettier can fail on edge-case JSX; return raw output
+    }
 
     return NextResponse.json({ output: jsx }, { status: 200 });
   } catch (error) {

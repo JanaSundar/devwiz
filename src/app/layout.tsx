@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import "jsoncrack-react/style.css";
 import { CommandMenu } from "@/components/CommandMenu";
 import QueryProvider from "@/components/QueryProvider";
 import Sidebar from "@/components/Sidebar";

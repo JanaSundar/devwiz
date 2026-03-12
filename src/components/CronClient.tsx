@@ -8,11 +8,16 @@ import { useMemo, useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const EXAMPLES = [
-  "*/5 * * * *",
-  "0 * * * *",
-  "0 9 * * 1-5",
-  "30 2 1 * *",
-  "0 0 1 1 *",
+  { expr: "*/5 * * * *", label: "Every 5 min" },
+  { expr: "*/15 * * * *", label: "Every 15 min" },
+  { expr: "0 * * * *", label: "Every hour" },
+  { expr: "0 9 * * 1-5", label: "Weekdays 9am" },
+  { expr: "0 0 * * *", label: "Daily midnight" },
+  { expr: "0 0 * * 0", label: "Weekly (Sun)" },
+  { expr: "0 0 1 * *", label: "Monthly (1st)" },
+  { expr: "30 2 1 * *", label: "1st at 2:30am" },
+  { expr: "0 0 1 1 *", label: "Yearly (Jan 1)" },
+  { expr: "0 12 * * 1-5", label: "Weekdays noon" },
 ];
 
 const FIELD_LABELS = ["minute", "hour", "day (month)", "month", "day (week)"];
@@ -23,7 +28,12 @@ export default function CronClient() {
 
   const parsed = useMemo(() => {
     if (!expression.trim())
-      return { summary: "", nextRun: "", error: null as string | null };
+      return {
+        summary: "",
+        nextRun: "",
+        nextRuns: [] as string[],
+        error: null as string | null,
+      };
     try {
       const summary = cronstrue.toString(expression, {
         throwExceptionOnParseError: true,
@@ -32,12 +42,18 @@ export default function CronClient() {
       const interval = CronExpressionParser.parse(expression, {
         currentDate: new Date(),
       });
-      const nextRun = format(interval.next().toDate(), "yyyy-MM-dd HH:mm:ss");
-      return { summary, nextRun, error: null as string | null };
+      const first = interval.next();
+      const nextRun = format(first.toDate(), "yyyy-MM-dd HH:mm:ss");
+      const nextRuns: string[] = [nextRun];
+      for (let i = 0; i < 4; i++) {
+        nextRuns.push(format(interval.next().toDate(), "yyyy-MM-dd HH:mm:ss"));
+      }
+      return { summary, nextRun, nextRuns, error: null as string | null };
     } catch (error) {
       return {
         summary: "",
         nextRun: "",
+        nextRuns: [] as string[],
         error:
           error instanceof Error ? error.message : "Invalid cron expression",
       };
@@ -115,8 +131,20 @@ export default function CronClient() {
                   &quot;{parsed.summary}.&quot;
                 </p>
                 <p className="text-sm text-txt-sec font-mono">
-                  at {parsed.nextRun}
+                  Next: {parsed.nextRun}
                 </p>
+                {parsed.nextRuns.length > 1 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-[10px] uppercase text-txt-muted">
+                      Next 5 runs
+                    </p>
+                    <ul className="text-xs font-mono text-txt-sec space-y-0.5">
+                      {parsed.nextRuns.map((r, i) => (
+                        <li key={i}>{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-txt-muted">
@@ -155,13 +183,14 @@ export default function CronClient() {
               Examples
             </p>
             <div className="flex flex-wrap gap-2">
-              {EXAMPLES.map((example) => (
+              {EXAMPLES.map(({ expr, label }) => (
                 <button
-                  key={example}
-                  onClick={() => setExpression(example)}
+                  key={expr}
+                  onClick={() => setExpression(expr)}
+                  title={expr}
                   className="px-2 py-1 rounded border border-border bg-bg-primary text-[11px] font-mono text-txt-sec hover:border-accent/30 tr-smooth"
                 >
-                  {example}
+                  {label}
                 </button>
               ))}
             </div>

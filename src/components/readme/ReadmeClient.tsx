@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { marked } from "marked";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import ThemeToggle from "@/components/ThemeToggle";
+import ToolHeader from "@/components/tooling/ToolHeader";
 import SectionBlock from "./SectionBlock";
 import {
   createCustomSection,
@@ -126,56 +126,51 @@ export default function ReadmeClient() {
 
   return (
     <div className="flex flex-col h-full anim-in">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
-        <div className="flex items-center gap-2 md:gap-3 pl-10 md:pl-0 min-w-0 flex-1">
-          <h2 className="text-base md:text-lg font-semibold text-txt truncate shrink-0">
-            README Generator
-          </h2>
-          <span className="px-2 py-0.5 text-[10px] rounded bg-accent/10 text-accent border border-accent/15 shrink-0">
-            {sections.filter((s) => s.enabled).length} sections active
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 overflow-x-auto md:justify-end">
-          <button
-            onClick={reset}
-            className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
-          >
-            <RotateCcw size={12} />
-            Reset
-          </button>
-          <button
-            onClick={download}
-            className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
-          >
-            <Download size={12} />
-            Download
-          </button>
-          <button
-            onClick={copy}
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs tr-smooth ${copied ? "bg-success/15 text-success border border-success/20" : "btn-accent"}`}
-          >
-            {copied ? <Check size={12} /> : <Copy size={12} />}
-            {copied ? "Copied!" : "Copy MD"}
-          </button>
-          <ThemeToggle />
-        </div>
-      </div>
+      <ToolHeader
+        title="README Generator"
+        badge={`${sections.filter((s) => s.enabled).length} sections`}
+        rightSlot={
+          <>
+            <button
+              onClick={reset}
+              className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
+            >
+              <RotateCcw size={12} />
+              Reset
+            </button>
+            <button
+              onClick={download}
+              className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
+            >
+              <Download size={12} />
+              Download
+            </button>
+            <button
+              onClick={copy}
+              className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs tr-smooth ${copied ? "bg-success/15 text-success border border-success/20" : "btn-accent"}`}
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? "Copied!" : "Copy MD"}
+            </button>
+          </>
+        }
+      />
 
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-y-auto lg:overflow-hidden">
-        <div className="w-full lg:w-105 flex flex-col border-b lg:border-b-0 lg:border-r border-border min-h-100 lg:min-h-0 shrink-0">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+        <div className="w-full lg:w-105 flex flex-col border-b lg:border-b-0 lg:border-r border-border min-h-100 lg:min-h-0 shrink-0 bg-bg-secondary/30">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg-secondary/50">
             <span className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
               Sections
             </span>
             <button
               onClick={addSection}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs btn-glass hover:border-accent/30"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass hover:border-accent/30"
             >
               <Plus size={12} />
-              Add
+              Add Section
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {mounted ? (
               <DndContext
                 sensors={sensors}
@@ -224,41 +219,44 @@ export default function ReadmeClient() {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-100 lg:min-h-0 shrink-0">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-3 border-b border-border/50">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 border-b border-border bg-bg-secondary/50">
             <span className="text-xs font-semibold text-txt-muted uppercase tracking-wider mr-auto">
               Preview
             </span>
-            <div className="flex items-center rounded-lg border border-border overflow-hidden w-full sm:w-auto">
+            <div className="flex items-center rounded-xl border border-border overflow-hidden w-full sm:w-auto">
               <button
                 onClick={() => setPreviewMode("preview")}
-                className={`flex-1 sm:flex-none justify-center items-center gap-1.5 px-3 py-1.5 text-xs tr-smooth ${previewMode === "preview" ? "bg-accent/10 text-accent" : "text-txt-muted hover:text-txt-sec"}`}
+                className={`flex-1 sm:flex-none flex justify-center items-center gap-1.5 px-3 py-2 text-xs tr-smooth ${previewMode === "preview" ? "bg-accent/10 text-accent border border-accent/20" : "text-txt-muted hover:text-txt-sec"}`}
               >
                 <Eye size={12} />
                 Preview
               </button>
               <button
                 onClick={() => setPreviewMode("raw")}
-                className={`flex-1 sm:flex-none justify-center items-center gap-1.5 px-3 py-1.5 text-xs tr-smooth ${previewMode === "raw" ? "bg-accent/10 text-accent" : "text-txt-muted hover:text-txt-sec"}`}
+                className={`flex-1 sm:flex-none flex justify-center items-center gap-1.5 px-3 py-2 text-xs tr-smooth ${previewMode === "raw" ? "bg-accent/10 text-accent border border-accent/20" : "text-txt-muted hover:text-txt-sec"}`}
               >
                 <Code size={12} />
                 Raw
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto bg-bg-primary">
             {previewMode === "preview" ? (
               sections.filter((s) => s.enabled).length ? (
                 <div
-                  className="md-preview p-4 sm:p-6"
+                  className="md-preview p-6 sm:p-8 max-w-3xl mx-auto"
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-txt-muted text-sm py-8 sm:py-0">
-                  Enable sections to see preview
+                <div className="flex flex-col items-center justify-center h-full text-txt-muted text-sm py-12 gap-2">
+                  <span>Enable sections to see preview</span>
+                  <span className="text-xs">
+                    Toggle sections with the eye icon
+                  </span>
                 </div>
               )
             ) : (
-              <pre className="h-full p-4 sm:p-6 text-xs font-mono text-txt-sec leading-relaxed whitespace-pre-wrap">
+              <pre className="h-full p-6 sm:p-8 text-xs font-mono text-txt-sec leading-relaxed whitespace-pre-wrap max-w-3xl mx-auto">
                 {md}
               </pre>
             )}

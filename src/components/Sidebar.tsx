@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { categories, transforms } from "@/lib/registry";
 import { getCategoryIcon } from "@/lib/toolCategoryIcon";
 import { getToolHref } from "@/lib/toolRoutes";
@@ -47,6 +47,12 @@ export default function Sidebar() {
 
   const openMobile = useCallback(() => setMobileOpen(true), []);
   const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  useEffect(() => {
+    const handler = () => setShowSettings(true);
+    window.addEventListener("open-settings", handler);
+    return () => window.removeEventListener("open-settings", handler);
+  }, []);
 
   const showLabels = !collapsed;
 

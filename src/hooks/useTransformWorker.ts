@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AI_TOOL_IDS } from "@/lib/registry";
 import { safeGetItem } from "@/lib/storage";
+import { safeParseJson } from "@/lib/utils";
 
 type WorkerResult = { id: string; output: string; error: string | null };
 
@@ -48,9 +49,11 @@ export function useTransformWorker() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ input, options }),
           });
-          const data = await res.json();
+          const data = await safeParseJson<{ output?: string; error?: string }>(
+            res,
+          );
           if (!res.ok) throw new Error(data.error || "Failed to transform SVG");
-          return { output: data.output, error: null };
+          return { output: data.output ?? "", error: null };
         } catch (err) {
           return {
             output: "",
@@ -100,7 +103,7 @@ async function streamAI(
     });
 
     if (!res.ok) {
-      const data = await res.json();
+      const data = await safeParseJson<{ error?: string }>(res);
       setIsGenerating(false);
       return { output: "", error: data.error || `API error (${res.status})` };
     }

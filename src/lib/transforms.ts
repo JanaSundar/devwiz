@@ -1,4 +1,5 @@
 import { TailwindConverter } from "css-to-tailwindcss";
+import { twi } from "tw-to-css";
 import { XMLParser } from "fast-xml-parser";
 import * as yaml from "js-yaml";
 import JsonToTS from "json-to-ts";
@@ -71,6 +72,19 @@ export function cssToJsObjects(input: string): string {
   return JSON.stringify(out, null, 2)
     .replace(/"([^"]+)":/g, "$1:")
     .replace(/: "([^"]+)"/g, ": '$1'");
+}
+
+export function tailwindToCss(input: string): string {
+  const classes = input.trim().split(/\s+/).filter(Boolean).join(" ");
+  if (!classes) return "";
+  try {
+    const css = twi(classes, { minify: false, merge: false });
+    return typeof css === "string" ? css : "";
+  } catch (err) {
+    throw new Error(
+      `Failed to convert Tailwind to CSS: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
 
 export async function cssToTailwind(input: string): Promise<string> {

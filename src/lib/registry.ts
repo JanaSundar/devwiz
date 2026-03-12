@@ -90,6 +90,16 @@ export const transforms: TransformConfig[] = [
     placeholder: "Extract title, description, and image metadata from a URL",
   },
   {
+    id: "cubic-bezier",
+    name: "Cubic-Bezier Visualizer",
+    category: "Utilities",
+    inputLabel: "Control Points",
+    outputLabel: "CSS/Motion",
+    inputLang: "markdown",
+    outputLang: "css",
+    placeholder: "Adjust bezier handles and copy CSS or Motion timing values.",
+  },
+  {
     id: "id-studio",
     name: "UUID / NanoID / ULID Studio",
     category: "Utilities",
@@ -172,6 +182,26 @@ export const transforms: TransformConfig[] = [
     placeholder: "1700000000",
   },
   {
+    id: "date-utilities",
+    name: "Date Utilities",
+    category: "Utilities",
+    inputLabel: "Date",
+    outputLabel: "Result",
+    inputLang: "markdown",
+    outputLang: "markdown",
+    placeholder: "Format, add/subtract, diff, and boundaries via date-fns",
+  },
+  {
+    id: "unit-converter",
+    name: "Unit Converter",
+    category: "Utilities",
+    inputLabel: "Value",
+    outputLabel: "Converted",
+    inputLang: "markdown",
+    outputLang: "markdown",
+    placeholder: "Length, weight, temperature, time, data size",
+  },
+  {
     id: "cron",
     name: "Cron Expression Helper",
     category: "Utilities",
@@ -190,16 +220,6 @@ export const transforms: TransformConfig[] = [
     inputLang: "markdown",
     outputLang: "html",
     placeholder: "Upload a .glb or .gltf model to preview with orbit controls.",
-  },
-  {
-    id: "cubic-bezier",
-    name: "Cubic-Bezier Visualizer",
-    category: "Utilities",
-    inputLabel: "Control Points",
-    outputLabel: "CSS/Motion",
-    inputLang: "markdown",
-    outputLang: "css",
-    placeholder: "Adjust bezier handles and copy CSS or Motion timing values.",
   },
   {
     id: "ai-regex-explainer",
@@ -254,7 +274,6 @@ export const transforms: TransformConfig[] = [
     placeholder:
       'TypeError: Cannot read properties of undefined (reading "map")\n    at RenderList (app.js:10:42)',
   },
-
   // --- Converters ---
   {
     id: "svg-to-jsx",
@@ -334,17 +353,6 @@ export const transforms: TransformConfig[] = [
       '{\n  "name": "DevWiz",\n  "version": "1.0.0",\n  "features": ["json-to-tree", "svg-viewer"],\n  "config": { "theme": "light", "autosave": true }\n}',
   },
   {
-    id: "json-to-graph",
-    name: "JSON to Graph",
-    category: "JSON",
-    inputLabel: "JSON",
-    outputLabel: "Graph View",
-    inputLang: "json",
-    outputLang: "json",
-    placeholder:
-      '{\n  "name": "DevWiz",\n  "version": "1.0.0",\n  "features": ["json-to-tree", "json-to-graph", "svg-viewer"],\n  "config": { "theme": "light", "autosave": true }\n}',
-  },
-  {
     id: "css-to-tailwind",
     name: "CSS to Tailwind",
     category: "CSS",
@@ -354,6 +362,17 @@ export const transforms: TransformConfig[] = [
     outputLang: "html",
     placeholder:
       ".card {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  padding: 16px;\n  border-radius: 8px;\n  background-color: #1a1a2e;\n  box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n}",
+  },
+  {
+    id: "tailwind-to-css",
+    name: "Tailwind to CSS",
+    category: "CSS",
+    inputLabel: "Tailwind Classes",
+    outputLabel: "CSS",
+    inputLang: "html",
+    outputLang: "css",
+    placeholder:
+      "flex items-center gap-2 p-4 rounded-lg bg-white shadow-md hover:shadow-lg",
   },
   {
     id: "json-to-yaml",
