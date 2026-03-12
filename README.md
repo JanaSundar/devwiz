@@ -58,7 +58,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ### Playground
 
-- API Playground (HTTP requests with CORS bypass)
+- API Playground (HTTP requests with CORS bypass, SOAP/XML support)
 - Flex & Grid Playground
 
 ### Converters
