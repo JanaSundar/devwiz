@@ -3,7 +3,8 @@
 import { Check, Copy, Globe, Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
-import ThemeToggle from "@/components/ThemeToggle";
+import ToolHeader from "@/components/tooling/ToolHeader";
+import { safeParseJson } from "@/lib/utils";
 
 type MetaModel = {
   title: string;
@@ -49,17 +50,23 @@ export default function MetascraperClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: sourceUrl }),
       });
-      const data = await response.json();
+      const data = await safeParseJson<{
+        error?: string;
+        input?: string;
+        metadata?: { title?: string; description?: string; image?: string };
+      }>(response);
       if (!response.ok) {
         throw new Error(data.error || "Failed to scrape metadata.");
       }
 
+      const m = data?.metadata;
       setMeta((prev) => ({
         ...prev,
-        title: data?.metadata?.title || prev.title,
-        description: data?.metadata?.description || prev.description,
-        image: data?.metadata?.image || prev.image,
-        url: data?.input || sourceUrl,
+        title: typeof m?.title === "string" ? m.title : prev.title,
+        description:
+          typeof m?.description === "string" ? m.description : prev.description,
+        image: typeof m?.image === "string" ? m.image : prev.image,
+        url: typeof data?.input === "string" ? data.input : sourceUrl,
       }));
     } catch (err) {
       setError(
@@ -105,66 +112,64 @@ export default function MetascraperClient() {
 
   return (
     <div className="flex flex-col h-full anim-in">
-      <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
-        <div className="flex items-center gap-2 md:gap-3 pl-10 md:pl-0 min-w-0 flex-1">
-          <h2 className="text-base md:text-lg font-semibold text-txt truncate">
-            Meta Tags Studio
-          </h2>
-          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-accent/10 text-accent border border-accent/15">
-            Utilities
-          </span>
-        </div>
-        <div className="flex items-center gap-2 w-auto shrink-0 overflow-x-auto">
-          <a
-            href="https://metascraper.js.org/#/"
-            target="_blank"
-            rel="noreferrer"
-            className="whitespace-nowrap flex items-center gap-1 px-2 py-1 text-[9px] md:text-[10px] text-txt-muted hover:text-accent rounded-md btn-glass tr-smooth"
-          >
-            Powered by Metascraper <Globe size={10} />
-          </a>
+      <ToolHeader
+        title="Meta Tags Studio"
+        badge="Utilities"
+        poweredBy={{
+          label: "Metascraper",
+          href: "https://metascraper.js.org/#/",
+          icon: <Globe size={10} />,
+        }}
+        rightSlot={
           <button
             onClick={copyTags}
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs tr-smooth ${copied ? "bg-success/15 text-success border border-success/20" : "btn-glass"}`}
+            className={`whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs tr-smooth ${copied ? "bg-success/15 text-success border border-success/20" : "btn-glass"}`}
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
             {copied ? "Copied" : "Copy Tags"}
           </button>
-          <ThemeToggle />
-        </div>
-      </div>
+        }
+      />
 
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-border bg-bg-secondary p-4 space-y-4 h-fit">
-            <div>
-              <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
-                Import from URL
-              </label>
-              <div className="mt-2 flex gap-2">
-                <input
-                  value={sourceUrl}
-                  onChange={(e) => setSourceUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  className="flex-1 px-3 py-2 text-sm rounded-lg bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
-                />
-                <button
-                  onClick={runScrape}
-                  disabled={loading}
-                  className="shrink-0 px-3 py-2 rounded-lg text-xs btn-accent disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
-                >
-                  {loading ? (
-                    <Loader2 size={12} className="animate-spin" />
-                  ) : (
-                    <Search size={12} />
-                  )}
-                  {loading ? "Importing..." : "Import"}
-                </button>
-              </div>
-              {error && <p className="mt-2 text-xs text-error">{error}</p>}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+        {/* Left: Form + Meta Fields */}
+        <section className="lg:w-[320px] xl:w-[360px] shrink-0 flex flex-col gap-4 p-4 border-b lg:border-b-0 lg:border-r border-border overflow-y-auto bg-bg-secondary/30">
+          <div className="rounded-xl border border-border bg-bg-secondary p-4">
+            <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
+              Import from URL
+            </label>
+            <div className="mt-2 flex gap-2">
+              <input
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="https://example.com"
+                className="flex-1 min-w-0 px-3 py-2.5 text-sm rounded-xl bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
+              />
+              <button
+                onClick={runScrape}
+                disabled={loading}
+                className="shrink-0 px-3 py-2.5 rounded-xl text-xs btn-accent disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                {loading ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Search size={12} />
+                )}
+                {loading ? "Importing..." : "Import"}
+              </button>
             </div>
+            {error && (
+              <p className="mt-2 text-xs text-error rounded-lg bg-error/5 p-2">
+                {error}
+              </p>
+            )}
+          </div>
 
-            <div className="grid grid-cols-1 gap-3">
+          <div className="rounded-xl border border-border bg-bg-secondary p-4 space-y-4">
+            <h3 className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
+              Meta Fields
+            </h3>
+            <div className="space-y-3">
               <Field
                 label="Title"
                 value={meta.title}
@@ -213,7 +218,7 @@ export default function MetascraperClient() {
                       twitterCard: e.target.value as MetaModel["twitterCard"],
                     }))
                   }
-                  className="mt-2 w-full px-3 py-2 text-sm rounded-lg bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
+                  className="mt-2 w-full px-3 py-2.5 text-sm rounded-xl bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
                 >
                   <option value="summary_large_image">
                     summary_large_image
@@ -223,13 +228,24 @@ export default function MetascraperClient() {
               </div>
             </div>
           </div>
+        </section>
 
-          <div className="space-y-4">
-            <div className="rounded-xl border border-border bg-bg-secondary p-4">
-              <div className="text-xs font-semibold text-txt-muted uppercase tracking-wider mb-3">
-                Social Preview
-              </div>
-              <div className="rounded-lg border border-border bg-bg-primary overflow-hidden">
+        {/* Right: Generated Metadata + Social Preview — 50/50 */}
+        <section className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col border-b lg:border-b-0 lg:border-r border-border overflow-hidden">
+            <div className="px-4 py-3 border-b border-border text-xs font-semibold text-txt-muted uppercase tracking-wider shrink-0 bg-bg-secondary/50">
+              Generated Meta Tags
+            </div>
+            <div className="flex-1 min-h-[200px] overflow-hidden">
+              <CodeEditor value={tagsOutput} language="html" readOnly />
+            </div>
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="px-4 py-3 border-b border-border text-xs font-semibold text-txt-muted uppercase tracking-wider shrink-0 bg-bg-secondary/50">
+              Social Preview
+            </div>
+            <div className="flex-1 min-h-[200px] overflow-auto p-4 flex items-center justify-center">
+              <div className="rounded-xl border border-border bg-bg-primary overflow-hidden w-full max-w-md shadow-lg">
                 <div className="w-full aspect-1200/630 bg-bg-tertiary overflow-hidden">
                   {/* biome-ignore lint/performance/noImgElement: Preview must render arbitrary remote URLs without next/image domain configuration. */}
                   <img
@@ -239,7 +255,7 @@ export default function MetascraperClient() {
                   />
                 </div>
                 <div className="p-3 space-y-1">
-                  <p className="text-[11px] text-txt-muted truncate">
+                  <p className="text-[10px] text-txt-muted truncate">
                     {meta.url}
                   </p>
                   <p className="text-sm font-semibold text-txt line-clamp-1">
@@ -248,21 +264,12 @@ export default function MetascraperClient() {
                   <p className="text-xs text-txt-sec line-clamp-2">
                     {meta.description || "No description set."}
                   </p>
-                  <p className="text-[11px] text-txt-muted">{meta.siteName}</p>
+                  <p className="text-[10px] text-txt-muted">{meta.siteName}</p>
                 </div>
               </div>
             </div>
-
-            <div className="rounded-xl border border-border bg-bg-secondary overflow-hidden">
-              <div className="px-4 py-3 border-b border-border text-xs font-semibold text-txt-muted uppercase tracking-wider">
-                Generated Meta Tags
-              </div>
-              <div className="h-85">
-                <CodeEditor value={tagsOutput} language="html" readOnly />
-              </div>
-            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
@@ -289,13 +296,13 @@ function Field({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={3}
-          className="mt-2 w-full px-3 py-2 text-sm rounded-lg bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth resize-none"
+          className="mt-2 w-full px-3 py-2.5 text-sm rounded-xl bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth resize-none"
         />
       ) : (
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="mt-2 w-full px-3 py-2 text-sm rounded-lg bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
+          className="mt-2 w-full px-3 py-2.5 text-sm rounded-xl bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/30 tr-smooth"
         />
       )}
     </div>

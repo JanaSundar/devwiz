@@ -1,9 +1,11 @@
 "use client";
+
 import { ArrowLeftRight, Columns, Rows, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import ReactDiffViewer, { DiffMethod } from "react-diff-viewer-continued";
-import ThemeToggle from "@/components/ThemeToggle";
+import ToolHeader from "@/components/tooling/ToolHeader";
+import { cn } from "@/lib/utils";
 
 export default function DiffViewerClient() {
   const [oldValue, setOldValue] = useState("");
@@ -14,28 +16,27 @@ export default function DiffViewerClient() {
   const currentTheme = theme === "system" ? systemTheme : theme;
   const isDark = currentTheme === "dark";
 
-  // Custom dark theme palette to match the app's bg-grad / premium UI
   const customStyles = {
     variables: {
       dark: {
         diffViewerBackground: "transparent",
-        diffViewerColor: "#A3A3A3", // text-txt-muted fallback
-        addedBackground: "rgba(34, 197, 94, 0.1)", // green-500/10
-        addedColor: "#4ade80", // green-400
-        removedBackground: "rgba(239, 68, 68, 0.1)", // red-500/10
-        removedColor: "#f87171", // red-400
-        wordAddedBackground: "rgba(34, 197, 94, 0.25)",
-        wordRemovedBackground: "rgba(239, 68, 68, 0.25)",
-        addedGutterBackground: "rgba(34, 197, 94, 0.05)",
-        removedGutterBackground: "rgba(239, 68, 68, 0.05)",
+        diffViewerColor: "#A3A3A3",
+        addedBackground: "rgba(34, 197, 94, 0.12)",
+        addedColor: "#4ade80",
+        removedBackground: "rgba(239, 68, 68, 0.12)",
+        removedColor: "#f87171",
+        wordAddedBackground: "rgba(34, 197, 94, 0.28)",
+        wordRemovedBackground: "rgba(239, 68, 68, 0.28)",
+        addedGutterBackground: "rgba(34, 197, 94, 0.08)",
+        removedGutterBackground: "rgba(239, 68, 68, 0.08)",
         gutterBackground: "transparent",
-        gutterBackgroundDark: "rgba(0,0,0,0.1)",
-        highlightBackground: "rgba(255, 255, 255, 0.05)",
-        highlightGutterBackground: "rgba(255, 255, 255, 0.05)",
-        codeFoldGutterBackground: "rgba(255, 255, 255, 0.05)",
+        gutterBackgroundDark: "rgba(0,0,0,0.08)",
+        highlightBackground: "rgba(255, 255, 255, 0.04)",
+        highlightGutterBackground: "rgba(255, 255, 255, 0.04)",
+        codeFoldGutterBackground: "rgba(255, 255, 255, 0.04)",
         codeFoldBackground: "rgba(255, 255, 255, 0.02)",
         emptyLineBackground: "transparent",
-        gutterColor: "#737373", // neutral-500
+        gutterColor: "#737373",
         addedGutterColor: "#4ade80",
         removedGutterColor: "#f87171",
         infoGutterBackground: "transparent",
@@ -68,98 +69,118 @@ export default function DiffViewerClient() {
     setNewValue("");
   };
 
+  const hasContent = oldValue.trim() || newValue.trim();
+
   return (
-    <div className="flex flex-col h-full bg-bg-secondary flex-1">
-      {/* Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 md:px-6 py-4 border-b border-border bg-bg-primary/50 backdrop-blur-sm z-10 shrink-0 gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-accent">
-            <ArrowLeftRight size={18} />
-            <h1 className="text-sm font-semibold text-txt tracking-wide">
-              Diff Viewer
-            </h1>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
-          <div className="flex items-center bg-bg-primary rounded-lg border border-border p-1">
+    <div className="flex flex-col h-full anim-in">
+      <ToolHeader
+        title="Diff Viewer"
+        badge="Utilities"
+        rightSlot={
+          <div className="flex items-center gap-2">
+            <div className="flex bg-bg-secondary rounded-lg border border-border p-0.5">
+              <button
+                onClick={() => setSplitView(true)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium tr-smooth",
+                  splitView
+                    ? "bg-accent/15 text-accent border border-accent/25"
+                    : "text-txt-muted hover:text-txt",
+                )}
+              >
+                <Columns size={12} /> Split
+              </button>
+              <button
+                onClick={() => setSplitView(false)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium tr-smooth",
+                  !splitView
+                    ? "bg-accent/15 text-accent border border-accent/25"
+                    : "text-txt-muted hover:text-txt",
+                )}
+              >
+                <Rows size={12} /> Inline
+              </button>
+            </div>
             <button
-              onClick={() => setSplitView(true)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${splitView ? "bg-accent/10 text-accent" : "text-txt-muted hover:text-txt"}`}
+              onClick={handleClear}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-error/80 hover:text-error hover:bg-error/10 rounded-lg tr-smooth"
             >
-              <Columns size={14} /> Split View
-            </button>
-            <button
-              onClick={() => setSplitView(false)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${!splitView ? "bg-accent/10 text-accent" : "text-txt-muted hover:text-txt"}`}
-            >
-              <Rows size={14} /> Inline
+              <Trash2 size={12} /> Clear
             </button>
           </div>
+        }
+      />
 
-          <div className="w-px h-6 bg-border mx-1" />
-
-          <button
-            onClick={handleClear}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-error/80 hover:text-error hover:bg-error/10 rounded-lg tr-smooth"
-          >
-            <Trash2 size={14} /> Clear
-          </button>
-
-          <ThemeToggle />
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row flex-1 h-[calc(100vh-72px)] overflow-hidden min-h-0">
-        {/* Input Area (Left/Top) */}
-        <div className="flex flex-col bg-border gap-px w-full lg:w-[350px] xl:w-[450px] shrink-0 border-r border-border overflow-y-auto min-h-[30vh] lg:min-h-0">
-          <div className="flex flex-col bg-bg-primary min-h-[200px] flex-1">
-            <div className="px-4 py-2 border-b border-border bg-bg-secondary/50 text-[11px] font-semibold tracking-wider uppercase text-txt-muted shrink-0">
-              Original Text
-            </div>
-            <textarea
-              value={oldValue}
-              onChange={(e) => setOldValue(e.target.value)}
-              placeholder="Paste original text here..."
-              className="flex-1 w-full p-4 bg-transparent border-none outline-none resize-none text-sm font-mono text-txt placeholder:text-txt-muted/50 overflow-y-auto"
-              spellCheck={false}
-            />
-          </div>
-          <div className="flex flex-col bg-bg-primary min-h-[200px] flex-1">
-            <div className="px-4 py-2 border-b border-border bg-bg-secondary/50 text-[11px] font-semibold tracking-wider uppercase text-txt-muted shrink-0">
-              Modified Text
-            </div>
-            <textarea
-              value={newValue}
-              onChange={(e) => setNewValue(e.target.value)}
-              placeholder="Paste modified text here..."
-              className="flex-1 w-full p-4 bg-transparent border-none outline-none resize-none text-sm font-mono text-txt placeholder:text-txt-muted/50 overflow-y-auto"
-              spellCheck={false}
-            />
-          </div>
-        </div>
-
-        {/* Diff View (Right/Bottom) */}
-        <div className="flex-1 bg-bg-primary min-h-[30vh] lg:min-h-0 relative">
-          {!oldValue && !newValue ? (
-            <div className="h-full flex items-center justify-center text-txt-muted text-sm">
-              Paste text in the fields above to see the difference.
-            </div>
-          ) : (
-            <div className="rounded-xl border border-border overflow-y-auto bg-bg-secondary/20 absolute inset-4">
-              <ReactDiffViewer
-                oldValue={oldValue}
-                newValue={newValue}
-                splitView={splitView}
-                useDarkTheme={isDark}
-                compareMethod={DiffMethod.WORDS}
-                styles={customStyles}
-                leftTitle="Original"
-                rightTitle="Modified"
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col lg:flex-row">
+        {/* Left: Input panels */}
+        <section className="lg:w-[320px] xl:w-[380px] shrink-0 flex flex-col border-b lg:border-b-0 lg:border-r border-border bg-bg-secondary/30">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 min-h-0 flex flex-col border-b border-border">
+              <div className="px-4 py-2.5 border-b border-border/50 shrink-0">
+                <span className="text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
+                  Original
+                </span>
+              </div>
+              <textarea
+                value={oldValue}
+                onChange={(e) => setOldValue(e.target.value)}
+                placeholder="Paste original text or code..."
+                className="flex-1 w-full p-4 bg-transparent border-none outline-none resize-none text-sm font-mono text-txt placeholder:text-txt-muted/50 overflow-y-auto min-h-[120px]"
+                spellCheck={false}
               />
             </div>
+            <div className="flex-1 min-h-0 flex flex-col">
+              <div className="px-4 py-2.5 border-b border-border/50 shrink-0">
+                <span className="text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
+                  Modified
+                </span>
+              </div>
+              <textarea
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                placeholder="Paste modified text or code..."
+                className="flex-1 w-full p-4 bg-transparent border-none outline-none resize-none text-sm font-mono text-txt placeholder:text-txt-muted/50 overflow-y-auto min-h-[120px]"
+                spellCheck={false}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Right: Diff output */}
+        <section className="flex-1 min-h-0 overflow-hidden flex flex-col bg-bg-primary">
+          {!hasContent ? (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="text-center max-w-sm">
+                <ArrowLeftRight
+                  size={48}
+                  className="mx-auto mb-4 text-txt-muted/30"
+                />
+                <p className="text-sm font-medium text-txt-muted mb-1">
+                  Compare two versions
+                </p>
+                <p className="text-xs text-txt-muted/80">
+                  Paste original and modified text in the panels to see the diff
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 overflow-auto p-4">
+              <div className="rounded-xl border border-border overflow-hidden bg-bg-secondary/30">
+                <ReactDiffViewer
+                  oldValue={oldValue}
+                  newValue={newValue}
+                  splitView={splitView}
+                  useDarkTheme={isDark}
+                  compareMethod={DiffMethod.WORDS}
+                  styles={customStyles}
+                  leftTitle="Original"
+                  rightTitle="Modified"
+                />
+              </div>
+            </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

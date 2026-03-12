@@ -15,7 +15,8 @@ import {
 import { motion, useSpring } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
-import ThemeToggle from "@/components/ThemeToggle";
+import ToolHeader from "@/components/tooling/ToolHeader";
+import { cn, safeParseJson } from "@/lib/utils";
 
 type OptimizeOptions = {
   multipass: boolean;
@@ -142,7 +143,9 @@ export default function SvgViewerClient() {
           },
         }),
       });
-      const data = await res.json();
+      const data = await safeParseJson<{ output?: string; error?: string }>(
+        res,
+      );
       if (!res.ok) {
         throw new Error(data.error || "Failed to format SVG");
       }
@@ -169,7 +172,11 @@ export default function SvgViewerClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input: svgText, options: opts ?? options }),
       });
-      const data = await res.json();
+      const data = await safeParseJson<{
+        output?: string;
+        error?: string;
+        stats?: { savedBytes: number; savedPercent: number };
+      }>(res);
 
       if (!res.ok) {
         throw new Error(data.error || "Failed to optimize SVG");
@@ -254,7 +261,9 @@ export default function SvgViewerClient() {
           },
         }),
       });
-      const data = await res.json();
+      const data = await safeParseJson<{ output?: string; error?: string }>(
+        res,
+      );
       if (!res.ok) throw new Error(data.error || "Failed to generate JSX");
       setJsxOutput(data.output || "");
     } catch (error) {
@@ -277,120 +286,120 @@ export default function SvgViewerClient() {
 
   return (
     <div className="flex flex-col h-full anim-in">
-      <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border gap-3 min-w-0">
-        <div className="flex items-center gap-2 md:gap-3 pl-10 md:pl-0 min-w-0 flex-1">
-          <h2 className="text-base md:text-lg font-semibold text-txt truncate">
-            SVG Viewer
-          </h2>
-          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-accent/10 text-accent border border-accent/15">
-            Converters
-          </span>
-        </div>
-        <div className="flex items-center gap-2 w-auto shrink-0 overflow-x-auto">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".svg,image/svg+xml"
-            className="hidden"
-            onChange={(e) => onUploadFile(e.target.files?.[0] || null)}
-          />
-          <button
-            onClick={onUploadClick}
-            className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
-          >
-            <Upload size={12} />
-            Upload
-          </button>
-          <button
-            onClick={onDownload}
-            className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
-          >
-            <Download size={12} />
-            Download
-          </button>
-          <button
-            onClick={onPrettify}
-            className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass"
-          >
-            <Wand2 size={12} />
-            Prettify
-          </button>
-          <button
-            onClick={() => void onOptimize()}
-            disabled={!!parseError || isOptimizing}
-            className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isOptimizing ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
+      <ToolHeader
+        title="SVG Viewer"
+        badge="Converters"
+        rightSlot={
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".svg,image/svg+xml"
+              className="hidden"
+              onChange={(e) => onUploadFile(e.target.files?.[0] || null)}
+            />
+            <button
+              onClick={onUploadClick}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass"
+            >
+              <Upload size={12} />
+              Upload
+            </button>
+            <button
+              onClick={onDownload}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass"
+            >
+              <Download size={12} />
+              Download
+            </button>
+            <button
+              onClick={onPrettify}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass"
+            >
               <Wand2 size={12} />
-            )}
-            Optimize
-          </button>
-          <button
-            onClick={onCopy}
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs tr-smooth ${copied ? "bg-success/15 text-success border border-success/20" : "btn-accent"}`}
-          >
-            {copied ? <Check size={12} /> : <Copy size={12} />}
-            {copied ? "Copied" : "Copy SVG"}
-          </button>
-          <ThemeToggle />
-        </div>
+              Prettify
+            </button>
+            <button
+              onClick={() => void onOptimize()}
+              disabled={!!parseError || isOptimizing}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isOptimizing ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Wand2 size={12} />
+              )}
+              Optimize
+            </button>
+            <button
+              onClick={onCopy}
+              className={cn(
+                "whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs tr-smooth",
+                copied
+                  ? "bg-success/15 text-success border border-success/20"
+                  : "btn-accent",
+              )}
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? "Copied" : "Copy SVG"}
+            </button>
+          </>
+        }
+      />
+
+      {/* Options bar */}
+      <div className="px-4 md:px-6 py-2.5 border-b border-border bg-bg-secondary/50 flex flex-wrap items-center gap-2 text-xs shrink-0">
+        <span className="text-txt-muted font-medium mr-1">Options:</span>
+        <OptionToggle
+          label="Multipass"
+          checked={options.multipass}
+          onChange={(v) => applyOption({ multipass: v })}
+        />
+        <OptionToggle
+          label="Pretty"
+          checked={options.pretty}
+          onChange={(v) => applyOption({ pretty: v })}
+        />
+        <OptionToggle
+          label="Remove Size"
+          checked={options.removeDimensions}
+          onChange={(v) => applyOption({ removeDimensions: v })}
+        />
+        <OptionToggle
+          label="Convert Colors"
+          checked={options.convertColors}
+          onChange={(v) => applyOption({ convertColors: v })}
+        />
+        <OptionToggle
+          label="Cleanup IDs"
+          checked={options.cleanupIds}
+          onChange={(v) => applyOption({ cleanupIds: v })}
+        />
+        <span className="text-border mx-1">|</span>
+        <button
+          onClick={onCopyDataUri}
+          disabled={!previewSvg}
+          className="px-2.5 py-1 rounded-lg btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {copyDataUriOk ? "Copied Data URI" : "Copy Data URI"}
+        </button>
+        <button
+          onClick={onGenerateJsx}
+          disabled={!!parseError || isGeneratingJsx}
+          className="px-2.5 py-1 rounded-lg btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isGeneratingJsx ? "Generating…" : "Generate JSX"}
+        </button>
       </div>
 
-      <div className="px-4 md:px-6 py-2 border-b border-border bg-bg-secondary/50">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <OptionToggle
-            label="Multipass"
-            checked={options.multipass}
-            onChange={(v) => applyOption({ multipass: v })}
-          />
-          <OptionToggle
-            label="Pretty"
-            checked={options.pretty}
-            onChange={(v) => applyOption({ pretty: v })}
-          />
-          <OptionToggle
-            label="Remove Size"
-            checked={options.removeDimensions}
-            onChange={(v) => applyOption({ removeDimensions: v })}
-          />
-          <OptionToggle
-            label="Convert Colors"
-            checked={options.convertColors}
-            onChange={(v) => applyOption({ convertColors: v })}
-          />
-          <OptionToggle
-            label="Cleanup IDs"
-            checked={options.cleanupIds}
-            onChange={(v) => applyOption({ cleanupIds: v })}
-          />
-          <button
-            onClick={onCopyDataUri}
-            disabled={!previewSvg}
-            className="px-2 py-1 rounded btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {copyDataUriOk ? "Copied Data URI" : "Copy Data URI"}
-          </button>
-          <button
-            onClick={onGenerateJsx}
-            disabled={!!parseError || isGeneratingJsx}
-            className="px-2 py-1 rounded btn-glass disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isGeneratingJsx ? "Generating JSX..." : "Generate JSX"}
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0 p-4 gap-4 overflow-y-auto lg:overflow-hidden">
-        <div className="flex-1 flex flex-col min-w-0 min-h-75 lg:min-h-0">
-          <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs text-txt-muted border-b border-border shrink-0 min-h-10">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-accent shrink-0" />
-              <span className="font-medium shrink-0">SVG INPUT</span>
-            </div>
+      {/* Main: Editor + Preview - Preview gets more space */}
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 gap-4 p-4 overflow-hidden">
+        <div className="lg:w-[45%] flex flex-col min-h-64 lg:min-h-0">
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-txt-muted shrink-0 rounded-t-xl border border-b-0 border-border bg-bg-secondary">
+            <span className="w-2 h-2 rounded-full bg-accent shrink-0" />
+            <span className="font-medium">SVG Input</span>
           </div>
-          <div className="flex-1 rounded-b-xl border border-border bg-bg-secondary overflow-hidden flex flex-col">
+          <div className="flex-1 rounded-b-xl border border-border bg-bg-secondary overflow-hidden flex flex-col min-h-0">
             <CodeEditor
               value={svgText}
               onChange={(v) => setSvgText(v)}
@@ -400,27 +409,32 @@ export default function SvgViewerClient() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0 min-h-75 lg:min-h-0">
-          <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs text-txt-muted border-b border-border shrink-0 min-h-10">
+        <div className="lg:w-[55%] flex flex-col min-h-64 lg:min-h-0">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs text-txt-muted shrink-0 rounded-t-xl border border-b-0 border-border bg-bg-secondary">
             <div className="flex items-center gap-2">
               <span
-                className={`w-2 h-2 rounded-full shrink-0 ${parseError ? "bg-error" : "bg-success"}`}
+                className={cn(
+                  "w-2 h-2 rounded-full shrink-0",
+                  parseError ? "bg-error" : "bg-success",
+                )}
               />
-              <span className="font-medium shrink-0">LIVE PREVIEW</span>
+              <span className="font-medium">Live Preview</span>
             </div>
-            <div className="ml-auto flex items-center gap-2 shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={onFit}
-                className="px-2 py-1 rounded text-[11px] btn-glass"
+                className="px-2 py-1 rounded-lg text-[11px] btn-glass"
               >
                 Fit
               </button>
               {optimizeInfo && !optimizeError && (
-                <span className="text-[11px] text-success max-w-56 truncate">
+                <span className="text-[11px] text-success max-w-40 truncate">
                   {optimizeInfo}
                 </span>
               )}
-              <span className="text-[11px] text-txt-muted">{zoom}%</span>
+              <span className="text-[11px] text-txt-muted tabular-nums">
+                {zoom}%
+              </span>
               <input
                 type="range"
                 min={25}
@@ -428,70 +442,70 @@ export default function SvgViewerClient() {
                 step={5}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
-                className="w-28"
+                className="w-24 accent-accent"
                 aria-label="Zoom"
               />
-              <Search size={12} />
+              <Search size={12} className="text-txt-muted" />
             </div>
           </div>
 
           {parseError ? (
-            <div className="flex-1 rounded-b-xl border border-error/20 bg-error/5 p-4 text-xs text-error font-mono flex items-start gap-2">
-              <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            <div className="flex-1 rounded-b-xl border border-t-0 border-error/20 flex items-start gap-2 p-4 bg-error/5 text-error text-xs">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" />
               <span>{parseError}</span>
             </div>
           ) : (
-            <div className="flex-1 rounded-b-xl border border-border bg-bg-secondary overflow-hidden">
-              <div className="w-full h-full p-4">
-                <div className="w-full h-full rounded-xl border border-border bg-[linear-gradient(45deg,rgba(0,0,0,0.04)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.04)_75%,rgba(0,0,0,0.04)),linear-gradient(45deg,rgba(0,0,0,0.04)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.04)_75%,rgba(0,0,0,0.04))] bg-size-[20px_20px] bg-position-[0_0,10px_10px] flex items-center justify-center overflow-auto">
-                  <motion.div
-                    style={{
-                      scale: zoomScale,
-                      transformOrigin: "center center",
-                    }}
-                    className="will-change-transform"
-                  >
-                    {sanitizedPreviewSvg ? (
-                      <div
-                        className="max-w-none w-auto h-auto [&_svg]:block [&_svg]:w-72 md:[&_svg]:w-96 [&_svg]:h-auto"
-                        role="img"
-                        aria-label="SVG preview"
-                        dangerouslySetInnerHTML={{
-                          __html: sanitizedPreviewSvg,
-                        }}
-                      />
-                    ) : (
-                      <div className="text-xs text-txt-muted">
-                        Preparing preview...
-                      </div>
-                    )}
-                  </motion.div>
-                </div>
+            <div className="flex-1 rounded-b-xl border border-border border-t-0 overflow-hidden bg-bg-secondary min-h-0">
+              <div className="w-full h-full p-6 flex items-center justify-center overflow-auto bg-[linear-gradient(45deg,rgba(0,0,0,0.04)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.04)_75%,rgba(0,0,0,0.04)),linear-gradient(45deg,rgba(0,0,0,0.04)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.04)_75%,rgba(0,0,0,0.04))] bg-size-[20px_20px] bg-position-[0_0,10px_10px]">
+                <motion.div
+                  style={{
+                    scale: zoomScale,
+                    transformOrigin: "center center",
+                  }}
+                  className="will-change-transform"
+                >
+                  {sanitizedPreviewSvg ? (
+                    <div
+                      className="[&_svg]:block [&_svg]:w-80 md:[&_svg]:w-[28rem] lg:[&_svg]:w-88 xl:[&_svg]:w-96 [&_svg]:h-auto [&_svg]:max-w-none"
+                      role="img"
+                      aria-label="SVG preview"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizedPreviewSvg,
+                      }}
+                    />
+                  ) : (
+                    <div className="text-xs text-txt-muted">
+                      Preparing preview…
+                    </div>
+                  )}
+                </motion.div>
               </div>
             </div>
           )}
+
           {optimizeError && (
-            <div className="mt-2 text-xs text-error flex items-center gap-1.5">
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-error">
               <AlertCircle size={12} />
               <span>{optimizeError}</span>
             </div>
           )}
+
           {jsxOutput && (
-            <div className="mt-2 rounded-lg border border-border bg-bg-secondary p-2">
-              <div className="mb-1 flex items-center justify-between">
-                <div className="text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
+            <div className="mt-3 rounded-xl border border-border bg-bg-secondary p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
                   React JSX Output
-                </div>
+                </span>
                 <button
                   onClick={onCopyJsx}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] btn-glass tr-smooth"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] btn-glass tr-smooth"
                   aria-label="Copy generated JSX"
                 >
                   {copyJsxOk ? <Check size={10} /> : <Copy size={10} />}
                   {copyJsxOk ? "Copied" : "Copy"}
                 </button>
               </div>
-              <pre className="text-[11px] font-mono text-txt-sec whitespace-pre-wrap max-h-40 overflow-auto">
+              <pre className="text-[11px] font-mono text-txt-sec whitespace-pre-wrap max-h-32 overflow-auto rounded-lg bg-bg-primary p-2">
                 {jsxOutput}
               </pre>
             </div>
@@ -499,7 +513,7 @@ export default function SvgViewerClient() {
         </div>
       </div>
 
-      <div className="px-6 pb-4 text-[11px] text-txt-muted flex items-center gap-2">
+      <div className="px-4 md:px-6 py-3 text-[11px] text-txt-muted flex items-center gap-2 border-t border-border/50 bg-bg-secondary/30">
         <ScanLine size={12} />
         Client-side SVG inspection and preview. No file upload to servers.
       </div>
@@ -519,9 +533,14 @@ function OptionToggle({
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`px-2 py-1 rounded border tr-smooth ${checked ? "bg-accent/10 border-accent/30 text-accent" : "bg-bg-primary border-border text-txt-muted"}`}
-      aria-pressed={checked}
       type="button"
+      className={cn(
+        "px-2.5 py-1 rounded-lg border tr-smooth",
+        checked
+          ? "bg-accent/10 border-accent/30 text-accent"
+          : "bg-bg-primary border-border text-txt-muted hover:text-txt",
+      )}
+      aria-pressed={checked}
     >
       {label}
     </button>

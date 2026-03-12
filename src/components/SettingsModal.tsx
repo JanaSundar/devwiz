@@ -1,16 +1,21 @@
 "use client";
+
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ExternalLink,
+  Key,
   Loader2,
   RefreshCw,
   Save,
   Settings,
+  Sparkles,
   X,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/storage";
+import { safeParseJson } from "@/lib/utils";
 
 export const DEFAULT_MODEL = "Qwen/Qwen2.5-Coder-32B-Instruct";
 
@@ -30,6 +35,7 @@ function formatNumber(n: number): string {
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const [hfToken, setHfToken] = useState("");
   const [model, setModel] = useState(DEFAULT_MODEL);
+  const [showToken, setShowToken] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -46,18 +52,19 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
   } = useQuery({
     queryKey: ["hf-models", hfToken],
     queryFn: async () => {
-      // Using the current hfToken text or local storage fallback for the query
       const tokenToUse = hfToken || safeGetItem("api_key_huggingface") || "";
       const url = tokenToUse
         ? `/api/models?token=${encodeURIComponent(tokenToUse)}`
         : `/api/models`;
       const res = await fetch(url);
+      const data = await safeParseJson<{ models?: HFModel[]; error?: string }>(
+        res,
+      );
       if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
       if (data.error) throw new Error(data.error);
       return data.models as HFModel[];
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const models = modelsData || [];
@@ -71,7 +78,6 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
 
     safeSetItem("hf_model", model);
 
-    // Clean up old keys
     safeRemoveItem("api_key_gemini");
     safeRemoveItem("api_key_openai");
 
@@ -81,84 +87,129 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const selectedInList = models.some((m) => m.id === model);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 anim-in">
-      <div className="w-full max-w-md bg-bg-primary border border-border rounded-xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Settings size={16} className="text-accent-light" /> Settings &amp;
-            API Keys
-          </h3>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="w-full max-w-lg bg-bg-primary border border-border rounded-2xl shadow-2xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-bg-secondary/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+              <Settings size={20} className="text-accent" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-txt">API Settings</h3>
+              <p className="text-[11px] text-txt-muted">
+                Configure AI provider for Regex, Code, Mock Data & more
+              </p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-txt-muted hover:text-txt-sec hover:bg-glass-hover tr-smooth"
+            className="p-2 rounded-lg text-txt-muted hover:text-txt hover:bg-bg-tertiary tr-smooth"
+            aria-label="Close"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
-          <div className="p-3 rounded-lg bg-accent/10 border border-accent/20">
-            <p className="text-xs text-accent-light font-medium mb-1">
-              🤗 Free &amp; Open Source AI
-            </p>
-            <p className="text-[11px] text-txt-sec leading-relaxed">
-              DevWiz uses Hugging Face Inference API with open-source models.
-              Get a free token to start — upgrade to HF Pro for premium models.
-            </p>
+        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+          {/* Hugging Face banner */}
+          <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                <Sparkles size={18} className="text-accent" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-txt mb-0.5">
+                  Hugging Face Inference API
+                </p>
+                <p className="text-[12px] text-txt-sec leading-relaxed">
+                  Free & open-source AI. Get a token to start — upgrade to HF
+                  Pro for premium models.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-txt-sec flex justify-between items-center">
-              <span>Hugging Face Token</span>
+          {/* Token input */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider flex items-center gap-2">
+                <Key size={12} />
+                Hugging Face Token
+              </label>
               <a
                 href="https://huggingface.co/settings/tokens"
                 target="_blank"
                 rel="noreferrer"
-                className="text-accent hover:underline text-[10px] flex items-center gap-1"
+                className="text-[11px] text-accent hover:underline flex items-center gap-1"
               >
-                Get Free Token <ExternalLink size={10} />
+                Get free token <ExternalLink size={10} />
               </a>
-            </label>
-            <input
-              type="password"
-              value={hfToken}
-              onChange={(e) => setHfToken(e.target.value)}
-              placeholder="hf_..."
-              className="w-full px-3 py-2 text-xs rounded-lg bg-bg-secondary border border-border text-txt placeholder:text-txt-muted focus:outline-none focus:ring-1 focus:ring-accent/50 tr-smooth"
-            />
+            </div>
+            <div className="relative">
+              <input
+                type={showToken ? "text" : "password"}
+                value={hfToken}
+                onChange={(e) => setHfToken(e.target.value)}
+                placeholder="hf_..."
+                className="w-full px-4 py-3 text-sm rounded-xl bg-bg-secondary border border-border text-txt placeholder:text-txt-muted focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 tr-smooth font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowToken(!showToken)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-txt-muted hover:text-txt"
+              >
+                {showToken ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-txt-sec flex justify-between items-center mb-2">
-              <span>AI Model</span>
+          {/* Model selector */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
+                AI Model
+              </label>
               <button
                 onClick={fetchModels}
                 disabled={loadingModels}
-                className="text-accent hover:underline text-[10px] flex items-center gap-1 disabled:opacity-50"
+                className="text-[11px] text-accent hover:underline flex items-center gap-1.5 disabled:opacity-50"
               >
                 <RefreshCw
-                  size={10}
+                  size={12}
                   className={loadingModels ? "animate-spin" : ""}
-                />{" "}
+                />
                 Refresh
               </button>
-            </label>
+            </div>
 
             {loadingModels && models.length === 0 ? (
-              <div className="flex items-center justify-center gap-2 py-3 text-xs text-txt-muted">
-                <Loader2 size={14} className="animate-spin" />
-                Loading models from Hugging Face...
+              <div className="flex items-center justify-center gap-2 py-6 rounded-xl border border-border bg-bg-secondary">
+                <Loader2 size={16} className="animate-spin text-accent" />
+                <span className="text-sm text-txt-muted">Loading models…</span>
               </div>
             ) : modelError && models.length === 0 ? (
-              <div className="text-xs text-error py-2">{modelError}</div>
+              <div className="py-4 px-4 rounded-xl border border-error/20 bg-error/5 text-sm text-error">
+                {modelError}
+              </div>
             ) : (
               <div className="relative">
                 <select
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-bg-secondary border border-border text-txt focus:outline-none focus:ring-1 focus:ring-accent/50 tr-smooth appearance-none cursor-pointer pr-8"
+                  className="w-full px-4 py-3 text-sm rounded-xl bg-bg-secondary border border-border text-txt focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 tr-smooth appearance-none cursor-pointer pr-10"
                 >
-                  {/* Show current model at top if not in fetched list */}
                   {!selectedInList && (
                     <option value={model}>
                       {model.split("/").pop()} (current)
@@ -172,40 +223,42 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                   ))}
                 </select>
                 <ChevronDown
-                  size={14}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-txt-muted pointer-events-none"
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-txt-muted pointer-events-none"
                 />
               </div>
             )}
 
-            <p className="text-[10px] text-txt-muted">
+            <p className="text-[11px] text-txt-muted">
               {models.length > 0
-                ? `${models.length} models available · 🔒 = gated (may need approval)`
+                ? `${models.length} models · 🔒 = gated (may need approval)`
                 : "Models loaded from Hugging Face API"}
             </p>
           </div>
 
-          <p className="text-[10px] text-txt-muted">
-            Token stored locally in your browser. Never sent anywhere except
-            Hugging Face.
+          <p className="text-[11px] text-txt-muted flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-success/60" />
+            Token stored locally only. Never sent except to Hugging Face.
           </p>
         </div>
 
-        <div className="px-4 py-3 border-t border-border/50 flex justify-end gap-2 bg-bg-secondary/50">
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-border flex justify-end gap-3 bg-bg-secondary/30">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs rounded-lg btn-glass"
+            className="px-4 py-2 text-sm rounded-xl btn-glass"
           >
             Cancel
           </button>
           <button
             onClick={save}
-            className="px-4 py-1.5 text-xs rounded-lg btn-accent flex items-center gap-1.5"
+            className="px-4 py-2 text-sm rounded-xl btn-accent flex items-center gap-2"
           >
-            <Save size={14} /> Save
+            <Save size={14} />
+            Save
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

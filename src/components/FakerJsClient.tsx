@@ -1,10 +1,10 @@
 "use client";
 
 import { faker } from "@faker-js/faker";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import ToolHeader from "@/components/tooling/ToolHeader";
-import { ToolPanel } from "@/components/tooling/ToolPanels";
+import { cn } from "@/lib/utils";
 
 type PresetKind = "person" | "company" | "product" | "address" | "mixed";
 type TileKind = PresetKind | `module:${string}`;
@@ -210,11 +210,12 @@ function createModuleCard(moduleName: string, index: number): DataCard {
   };
 }
 
+const COUNT_PRESETS = [5, 10, 20, 50];
+
 export default function FakerJsClient() {
   const moduleOptions = useMemo(() => getFakerModuleOptions(), []);
   const [kind, setKind] = useState<TileKind>("person");
   const [count, setCount] = useState(10);
-  const [showConfigMobile, setShowConfigMobile] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const cards = useMemo(() => {
@@ -241,31 +242,25 @@ export default function FakerJsClient() {
     <div className="flex flex-col h-full anim-in">
       <ToolHeader title="Fake Data Generator" badge="Utilities" />
 
-      <div className="flex-1 min-h-0 p-4 flex flex-col gap-4 overflow-hidden">
-        <div className="md:hidden">
-          <button
-            onClick={() => setShowConfigMobile((prev) => !prev)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-bg-secondary text-xs font-semibold text-txt"
-          >
-            {showConfigMobile ? "Hide Config" : "Show Config"}
-          </button>
-        </div>
-
-        <div
-          className={`flex flex-col min-w-0 ${showConfigMobile ? "flex" : "hidden"} md:flex`}
-        >
-          <ToolPanel
-            title="CONFIG"
-            statusClassName="bg-accent"
-            frameClassName="p-4"
-          >
-            <div className="flex flex-wrap md:flex-nowrap gap-4">
-              <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider flex-1 min-w-55">
-                Tile Type
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col lg:flex-row">
+        {/* Left: Config */}
+        <section className="lg:w-[300px] xl:w-[340px] shrink-0 flex flex-col border-b lg:border-b-0 lg:border-r border-border bg-bg-secondary/30">
+          <div className="p-4 md:p-5 border-b border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles size={16} className="text-accent" />
+              <span className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
+                Configuration
+              </span>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
+                  Type
+                </label>
                 <select
                   value={kind}
-                  onChange={(event) => setKind(event.target.value as TileKind)}
-                  className="mt-2 w-full px-3 py-2 text-sm rounded-lg bg-bg-primary border border-border text-txt"
+                  onChange={(e) => setKind(e.target.value as TileKind)}
+                  className="mt-2 w-full px-3 py-2.5 text-sm rounded-xl bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/40 tr-smooth"
                 >
                   {PRESET_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -278,84 +273,127 @@ export default function FakerJsClient() {
                     </option>
                   ))}
                 </select>
-              </label>
+              </div>
 
-              <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider flex-1 min-w-55">
-                Tile Count
+              <div>
+                <label className="text-xs font-semibold text-txt-muted uppercase tracking-wider">
+                  Count
+                </label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {COUNT_PRESETS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setCount(n)}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-[11px] font-medium tr-smooth",
+                        count === n
+                          ? "bg-accent/15 text-accent border border-accent/30"
+                          : "btn-glass hover:border-accent/30",
+                      )}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="number"
                   min={1}
                   max={100}
                   value={count}
-                  onChange={(event) =>
+                  onChange={(e) =>
                     setCount(
-                      Math.max(
-                        1,
-                        Math.min(100, Number(event.target.value) || 1),
-                      ),
+                      Math.max(1, Math.min(100, Number(e.target.value) || 1)),
                     )
                   }
-                  className="mt-2 w-full px-3 py-2 text-sm rounded-lg bg-bg-primary border border-border text-txt"
+                  className="mt-2 w-full px-3 py-2 text-sm rounded-xl bg-bg-primary border border-border text-txt focus:outline-none focus:border-accent/40 tr-smooth"
                 />
-              </label>
+              </div>
             </div>
-          </ToolPanel>
-        </div>
+          </div>
+        </section>
 
-        <div className="flex-1 min-h-0 flex flex-col min-w-0">
-          <ToolPanel
-            title="GENERATED TILES"
-            statusClassName="bg-success"
-            frameClassName="overflow-y-auto p-3 min-h-0"
-          >
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-              {cards.map((card) => (
-                <div
-                  key={card.id}
-                  className="rounded-xl border border-border bg-bg-primary p-3 space-y-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-txt truncate">
-                        {card.title}
-                      </p>
-                      <p className="text-xs text-txt-muted mt-0.5 truncate">
-                        {card.subtitle}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => copyCard(card)}
-                      className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] tr-smooth ${copiedId === card.id ? "bg-success/15 text-success border border-success/20" : "btn-glass"}`}
-                    >
-                      {copiedId === card.id ? (
-                        <Check size={11} />
-                      ) : (
-                        <Copy size={11} />
-                      )}
-                      {copiedId === card.id ? "Copied" : "Copy"}
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {Object.entries(card.details).map(([key, value]) => (
-                      <div
-                        key={key}
-                        className="rounded-lg border border-border bg-bg-secondary px-2.5 py-2"
-                      >
-                        <p className="text-[10px] uppercase tracking-wider text-txt-muted">
-                          {key}
-                        </p>
-                        <p className="text-xs text-txt mt-1 break-all">
-                          {String(value)}
-                        </p>
+        {/* Right: Generated cards */}
+        <section className="flex-1 min-h-0 overflow-auto p-4 md:p-6">
+          {cards.length > 0 ? (
+            <div className="space-y-4 max-w-5xl">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-txt-muted uppercase tracking-wider">
+                  Generated ({cards.length} items)
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {cards.map((card) => (
+                  <div
+                    key={card.id}
+                    className="rounded-2xl border border-border bg-bg-primary overflow-hidden hover:border-accent/20 tr-smooth group"
+                  >
+                    <div className="p-4 border-b border-border/50 bg-bg-secondary/30">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-txt truncate">
+                            {card.title}
+                          </p>
+                          <p className="text-xs text-txt-muted mt-0.5 truncate">
+                            {card.subtitle}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => copyCard(card)}
+                          className={cn(
+                            "shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] tr-smooth",
+                            copiedId === card.id
+                              ? "bg-success/15 text-success border border-success/20"
+                              : "btn-glass hover:border-accent/30 opacity-0 group-hover:opacity-100 md:opacity-100",
+                          )}
+                        >
+                          {copiedId === card.id ? (
+                            <Check size={12} />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                          {copiedId === card.id ? "Copied" : "Copy JSON"}
+                        </button>
                       </div>
-                    ))}
+                    </div>
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 gap-2">
+                        {Object.entries(card.details).map(([key, value]) => (
+                          <div
+                            key={key}
+                            className="flex flex-col gap-0.5 rounded-lg bg-bg-secondary/50 px-3 py-2"
+                          >
+                            <p className="text-[10px] uppercase tracking-wider text-txt-muted font-medium">
+                              {key}
+                            </p>
+                            <p className="text-xs text-txt break-all font-mono">
+                              {String(value)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </ToolPanel>
-        </div>
+          ) : (
+            <div className="flex h-full min-h-[280px] items-center justify-center">
+              <div className="text-center max-w-sm">
+                <Sparkles
+                  size={40}
+                  className="mx-auto mb-4 text-txt-muted/40"
+                />
+                <p className="text-sm font-medium text-txt-muted mb-1">
+                  Generate fake data
+                </p>
+                <p className="text-xs text-txt-muted/80">
+                  Select a type and count, then view the generated cards
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

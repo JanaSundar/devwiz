@@ -6,18 +6,20 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ## Highlights
 
-- 40+ built-in tools across utilities, converters, JSON workflows, and AI tools
-- Visual and interactive tooling for JSON, SVG, OG images, whiteboarding, and curves
+- **50+ built-in tools** across utilities, converters, JSON workflows, AI tools, and playgrounds
+- **Visual and interactive tooling**: JSON, SVG, OG images, whiteboarding, cubic-bezier curves, Flex & Grid CSS
 - **Global Command Menu**: Quick access to all tools and themes via `Cmd+K`
-- **Flex & Grid Playground**: Interactive CSS flexbox / grid “lab” with challenges, hints, and live preview
-- **Premium UI**: Sleek theme-aware aesthetic with smooth motion transitions and responsive layouts for mobile and tablet
-- 3D model utility with a premium GLTF/GLB viewer and orbit controls
-- PWA support with service worker integration via Serwist
-- App Router architecture with reusable client components and clean route mapping
+- **Flex & Grid Playground**: Interactive CSS flexbox / grid “lab” with guided challenges, presets, and live preview
+- **Date Utilities**: date-fns powered format, parse, compare, add/subtract, and more
+- **Unit Converter**: Length, weight, temperature, time, and data size conversions
+- **Premium UI**: Sleek theme-aware aesthetic with smooth motion transitions and responsive layouts
+- **3D model viewer**: GLTF/GLB viewer with orbit controls
+- **PWA support**: Service worker integration via Serwist
 
 ## Keyboard Shortcuts
 
 - `⌘ K`: Open Global Command Menu
+- `⌘ Enter`: Run AI tool (Regex, Code Commenter, Mock Data, Commit Message, Error Explainer)
 - `ESC`: Close active menu or modal
 - `↑ / ↓`: Navigate tool lists or command menu
 - `Enter`: Select or open tool
@@ -39,7 +41,9 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - Password Generator
 - JWT Debugger
 - Timestamp Converter
+- Date Utilities (date-fns)
 - Cron Expression Helper
+- Unit Converter
 - GLTF/GLB 3D Model Viewer
 - Cubic-Bezier Visualizer
 
@@ -67,8 +71,8 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - JSON to TypeScript
 - URL Encode / Decode
 - JSON to Tree View
-- JSON to Graph
 - CSS to Tailwind
+- Tailwind to CSS
 - JSON to YAML
 - YAML to JSON
 - JS Object to JSON
@@ -83,7 +87,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ## Tech Stack
 
-- Next.js 16 (App Router)
+- Next.js 16 (App Router, Turbopack)
 - React 19
 - TypeScript
 - Tailwind CSS 4
@@ -108,6 +112,7 @@ pnpm install
 ### Run in Development
 
 ```bash
+pnpm install   # if you haven't already
 pnpm dev
 ```
 
@@ -122,13 +127,14 @@ pnpm start
 
 ## Available Scripts
 
-- pnpm dev: start Next.js dev server and Serwist watcher
-- pnpm build: build service worker and Next.js production bundle
-- pnpm start: run production server
-- pnpm lint: run Biome lint checks
-- pnpm lint:fix: auto-fix lint issues with Biome
-- pnpm check: run Biome checks across project
-- pnpm format: format project with Biome
+- **pnpm dev**: start Next.js dev server (Turbopack) and Serwist watcher
+- **pnpm build**: build service worker and Next.js production bundle
+- **pnpm start**: run production server
+- **pnpm lint**: run Biome lint checks
+- **pnpm lint:fix**: auto-fix lint issues with Biome
+- **pnpm check**: run Biome checks across project
+- **pnpm format**: format project with Biome
+- **pnpm precommit**: run lint-staged (Biome check on staged files)
 
 ## Configuration
 

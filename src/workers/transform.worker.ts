@@ -3,6 +3,7 @@ import {
   cssToJsObjects,
   cssToTailwind,
   jsObjectToJson,
+  tailwindToCss,
   jsonToJsonSchema,
   jsonToToml,
   jsonToTypescript,
@@ -30,6 +31,7 @@ const fns: Record<string, (input: string) => string | Promise<string>> = {
   "yaml-to-toml": yamlToToml,
   "toml-to-yaml": tomlToYaml,
   "css-to-tailwind": cssToTailwind,
+  "tailwind-to-css": tailwindToCss,
   "url-codec": urlEncode,
 };
 

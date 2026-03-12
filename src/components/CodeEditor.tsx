@@ -58,8 +58,8 @@ export default function CodeEditor({
       lang(),
       keymap.of([indentWithTab]),
       EditorView.theme({
-        "&": { height: "100%" },
-        ".cm-scroller": { overflow: "auto" },
+        "&": { height: "100%", minHeight: 0 },
+        ".cm-scroller": { overflow: "auto", minHeight: 0 },
       }),
     ];
     if (placeholder) exts.push(cmPlaceholder(placeholder));
@@ -87,5 +87,5 @@ export default function CodeEditor({
       v.dispatch({ changes: { from: 0, to: cur.length, insert: value } });
   }, [value]);
 
-  return <div ref={ref} className="h-full w-full overflow-hidden" />;
+  return <div ref={ref} className="h-full min-h-0 w-full overflow-hidden" />;
 }

@@ -13,6 +13,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ToolHeader from "@/components/tooling/ToolHeader";
+import { safeParseJson } from "@/lib/utils";
 
 const API_BASE = "https://api.iconify.design";
 const PAGE_SIZE = 100;
@@ -218,8 +219,10 @@ export default function IconSearchClient() {
           },
         }),
       });
-      if (!res.ok) throw new Error("SVGR transform failed");
-      const data = await res.json();
+      const data = await safeParseJson<{ output?: string; error?: string }>(
+        res,
+      );
+      if (!res.ok) throw new Error(data.error || "SVGR transform failed");
       return data.output as string;
     },
     enabled: !!selected && !!svgQuery.data,
