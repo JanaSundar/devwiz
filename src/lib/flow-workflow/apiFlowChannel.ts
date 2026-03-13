@@ -2,7 +2,7 @@ import { useApiFlowStore } from "./apiFlowStore";
 
 const CHANNEL_NAME = "devwiz-flow-board-api";
 
-export interface ApiFlowPayload {
+export interface ApiRequestResponsePayload {
   type: "api-request-response";
   /** When "diagram", open Flow Board in Diagram mode with response body as flow. When "workflow" or omitted, open Workflow mode. */
   openAs?: "diagram" | "workflow";
@@ -24,6 +24,14 @@ export interface ApiFlowPayload {
     statusCode?: number;
   };
 }
+
+export interface MermaidFlowPayload {
+  type: "mermaid-flow";
+  openAs?: "diagram";
+  mermaid: string;
+}
+
+export type ApiFlowPayload = ApiRequestResponsePayload | MermaidFlowPayload;
 
 export function broadcastApiToFlowBoard(payload: ApiFlowPayload): void {
   useApiFlowStore.getState().setPendingPayload(payload);
@@ -51,7 +59,10 @@ export function subscribeToApiFlow(
   if (typeof BroadcastChannel === "undefined") return () => {};
   const channel = new BroadcastChannel(CHANNEL_NAME);
   const handler = (e: MessageEvent<ApiFlowPayload>) => {
-    if (e.data?.type === "api-request-response") {
+    if (
+      e.data?.type === "api-request-response" ||
+      e.data?.type === "mermaid-flow"
+    ) {
       onMessage(e.data);
     }
   };

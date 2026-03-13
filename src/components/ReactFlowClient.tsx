@@ -97,6 +97,102 @@ function generateId() {
   return `n${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function parseMermaidToken(
+  token: string,
+): { id: string; label?: string } | null {
+  const cleaned = token.trim();
+  if (!cleaned) return null;
+
+  const match = cleaned.match(
+    /^([A-Za-z0-9_]+)(?:\(\((.*?)\)\)|\((.*?)\)|\[(.*?)\]|\{(.*?)\})?/,
+  );
+  if (!match) return null;
+
+  const id = match[1];
+  const label = [match[2], match[3], match[4], match[5]].find(
+    (v) => typeof v === "string" && v.trim().length > 0,
+  );
+  return { id, label: label?.trim() };
+}
+
+function mermaidToFlowData(mermaid: string): { nodes: Node[]; edges: Edge[] } {
+  const lines = mermaid
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith("%%"));
+
+  const labelById = new Map<string, string>();
+  const edgeList: { source: string; target: string; label?: string }[] = [];
+
+  for (const line of lines) {
+    if (
+      line.startsWith("flowchart") ||
+      line.startsWith("graph") ||
+      line.startsWith("subgraph") ||
+      line === "end"
+    ) {
+      continue;
+    }
+
+    const arrowIndex = line.indexOf("-->");
+    if (arrowIndex !== -1) {
+      const left = parseMermaidToken(line.slice(0, arrowIndex));
+      let rightRaw = line.slice(arrowIndex + 3).trim();
+      let edgeLabel: string | undefined;
+      if (rightRaw.startsWith("|")) {
+        const closing = rightRaw.indexOf("|", 1);
+        if (closing > 1) {
+          edgeLabel = rightRaw.slice(1, closing).trim();
+          rightRaw = rightRaw.slice(closing + 1).trim();
+        }
+      }
+      const right = parseMermaidToken(rightRaw);
+
+      if (left?.id && right?.id) {
+        if (left.label) labelById.set(left.id, left.label);
+        if (right.label) labelById.set(right.id, right.label);
+        edgeList.push({
+          source: left.id,
+          target: right.id,
+          label: edgeLabel,
+        });
+      }
+      continue;
+    }
+
+    const standalone = parseMermaidToken(line);
+    if (standalone?.id && standalone.label) {
+      labelById.set(standalone.id, standalone.label);
+    }
+  }
+
+  const ids = new Set<string>();
+  for (const edge of edgeList) {
+    ids.add(edge.source);
+    ids.add(edge.target);
+  }
+  for (const id of labelById.keys()) ids.add(id);
+
+  const nodeIds = Array.from(ids);
+  const nodes: Node[] = nodeIds.map((id, index) => ({
+    id,
+    position: {
+      x: 120 + (index % 4) * 220,
+      y: 80 + Math.floor(index / 4) * 130,
+    },
+    data: { label: labelById.get(id) ?? id },
+  }));
+
+  const edges: Edge[] = edgeList.map((edge, index) => ({
+    id: `m-${index}-${edge.source}-${edge.target}`,
+    source: edge.source,
+    target: edge.target,
+    data: edge.label ? { label: edge.label } : undefined,
+  }));
+
+  return { nodes, edges };
+}
+
 function getKeyLabel(path: string, isArray: boolean): string {
   if (!path) return isArray ? "[]" : "{}";
   const lastPart = path.split(".").pop() ?? "";
@@ -457,6 +553,33 @@ export default function ReactFlowClient() {
     });
   }, [nodes, edges]);
 
+  const handleExpandCompactJsonNode = useCallback(
+    (node: Node) => {
+      const rawContent =
+        (node.data as { content?: string; label?: string })?.content ??
+        (node.data as { label?: string })?.label ??
+        "{}";
+      const json = String(rawContent);
+      try {
+        const { nodes: newNodes, edges: newEdges } = jsonToFlowData(
+          json,
+          "expanded",
+        );
+        setDisplayMode("expanded");
+        setLastConvertedJson(json);
+        setNodes(newNodes);
+        setEdges(newEdges);
+        setFitViewTrigger(Date.now());
+      } catch {
+        setDisplayMode("expanded");
+        setJsonInput(json);
+        setJsonError(null);
+        setJsonDialogOpen(true);
+      }
+    },
+    [setDisplayMode, setNodes, setEdges, setFitViewTrigger],
+  );
+
   const handleClear = useCallback(() => {
     if (
       typeof window !== "undefined" &&
@@ -498,6 +621,21 @@ export default function ReactFlowClient() {
   useEffect(() => {
     const payload = pendingApiPayload;
     if (!payload) return;
+    if (payload.type === "mermaid-flow") {
+      try {
+        const { nodes: n, edges: e } = mermaidToFlowData(payload.mermaid);
+        if (n.length > 0) {
+          setMode("diagram");
+          setNodes(n);
+          setEdges(e);
+          setFitViewTrigger(Date.now());
+        }
+      } finally {
+        setPendingApiPayload(null);
+      }
+      return;
+    }
+
     if (payload.openAs === "diagram" && payload.response?.body) {
       const body = payload.response.body.trim();
       const jsonToLoad =
@@ -514,7 +652,10 @@ export default function ReactFlowClient() {
   useEffect(() => {
     return subscribeToApiFlow((payload) => {
       setPendingApiPayload(payload);
-      if (payload.openAs !== "diagram") {
+      if (
+        payload.type === "api-request-response" &&
+        payload.openAs !== "diagram"
+      ) {
         setMode("workflow");
       }
     });
@@ -604,6 +745,11 @@ export default function ReactFlowClient() {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
+              onNodeDoubleClick={(_, node) => {
+                if (node.type === "compactJson") {
+                  handleExpandCompactJsonNode(node);
+                }
+              }}
               fitView
               fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
               colorMode={colorMode}

@@ -29,6 +29,8 @@ export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
   "vscode-theme-generator": "/vscode-theme-generator",
   "flex-grid-playground": "/flex-grid-playground",
   "regex-playground": "/regex-playground",
+  "diagram-lab": "/mermaid-studio",
+  "graph-lab": "/chart-studio",
 };
 
 export function getToolHref(toolId: string) {
