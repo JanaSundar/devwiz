@@ -25,11 +25,7 @@ import ToolHeader from "@/components/tooling/ToolHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiFlowPayload } from "@/lib/flow-workflow/apiFlowChannel";
-import {
-  broadcastApiToFlowBoard,
-  storeApiPayloadForFlowBoard,
-} from "@/lib/flow-workflow/apiFlowChannel";
-import { useApiPlaygroundStore } from "@/lib/stores/apiPlaygroundStore";
+import { storeApiPayloadForFlowBoard } from "@/lib/flow-workflow/apiFlowChannel";
 import { cn } from "@/lib/utils";
 
 const METHODS = [
@@ -352,10 +348,6 @@ export default function ApiPlaygroundClient() {
   const [copied, setCopied] = useState<string | null>(null);
   const [jsonPath, setJsonPath] = useState("");
   const [findText, setFindText] = useState("");
-  const sendToFlowBoard = useApiPlaygroundStore((s) => s.sendToFlowBoard);
-  const toggleSendToFlowBoard = useApiPlaygroundStore(
-    (s) => s.toggleSendToFlowBoard,
-  );
 
   const router = useRouter();
 
@@ -643,28 +635,6 @@ export default function ApiPlaygroundClient() {
 
       if (res.status !== 200) {
         setError(data.error ?? "Request failed");
-        if (sendToFlowBoard) {
-          const reqUrl = new URL(url.trim());
-          for (const [k, v] of Object.entries(buildParams())) {
-            if (k && v) reqUrl.searchParams.set(k, v);
-          }
-          broadcastApiToFlowBoard({
-            type: "api-request-response",
-            request: {
-              method,
-              url: reqUrl.toString(),
-              headers: buildHeaders(),
-              body:
-                showBodySection &&
-                (bodyType === "JSON" ||
-                  bodyType === "XML" ||
-                  bodyType === "Raw")
-                  ? body
-                  : undefined,
-            },
-            error: { message: data.error ?? "Request failed" },
-          });
-        }
         return;
       }
 
@@ -675,34 +645,6 @@ export default function ApiPlaygroundClient() {
         body: data.body ?? "",
         duration: data.duration ?? 0,
       });
-
-      if (sendToFlowBoard) {
-        const reqUrl = new URL(url.trim());
-        for (const [k, v] of Object.entries(buildParams())) {
-          if (k && v) reqUrl.searchParams.set(k, v);
-        }
-        broadcastApiToFlowBoard({
-          type: "api-request-response",
-          openAs: "diagram",
-          request: {
-            method,
-            url: reqUrl.toString(),
-            headers: buildHeaders(),
-            body:
-              showBodySection &&
-              (bodyType === "JSON" || bodyType === "XML" || bodyType === "Raw")
-                ? body
-                : undefined,
-          },
-          response: {
-            status: data.status ?? 0,
-            statusText: data.statusText ?? "",
-            duration: data.duration ?? 0,
-            headers: data.headers ?? {},
-            body: data.body ?? "",
-          },
-        });
-      }
     } catch (err) {
       const msg = axios.isAxiosError(err)
         ? ((err.response?.data as { error?: string })?.error ?? err.message)
@@ -710,31 +652,6 @@ export default function ApiPlaygroundClient() {
           ? err.message
           : "Request failed";
       setError(msg);
-      if (sendToFlowBoard) {
-        const reqUrl = new URL(url.trim());
-        for (const [k, v] of Object.entries(buildParams())) {
-          if (k && v) reqUrl.searchParams.set(k, v);
-        }
-        broadcastApiToFlowBoard({
-          type: "api-request-response",
-          request: {
-            method,
-            url: reqUrl.toString(),
-            headers: buildHeaders(),
-            body:
-              showBodySection &&
-              (bodyType === "JSON" || bodyType === "XML" || bodyType === "Raw")
-                ? body
-                : undefined,
-          },
-          error: {
-            message: msg,
-            statusCode: axios.isAxiosError(err)
-              ? err.response?.status
-              : undefined,
-          },
-        });
-      }
     } finally {
       setLoading(false);
     }
@@ -750,7 +667,6 @@ export default function ApiPlaygroundClient() {
     buildAuth,
     buildBodyType,
     buildFormFields,
-    sendToFlowBoard,
   ]);
 
   const copyAsCurl = useCallback(() => {
@@ -929,35 +845,15 @@ export default function ApiPlaygroundClient() {
         badge="Playground"
         rightSlot={
           <div className="flex items-center gap-1.5">
-            <div className="flex items-center gap-0.5">
-              <button
-                type="button"
-                onClick={goToFlowBoard}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-l-lg text-xs btn-glass hover:border-accent/30 tr-smooth",
-                  sendToFlowBoard && "text-accent border-accent/30",
-                )}
-                title="Open Flow Board with current request and response"
-              >
-                <GitBranch size={12} />
-                Flow Board
-              </button>
-              <button
-                type="button"
-                onClick={toggleSendToFlowBoard}
-                className={cn(
-                  "px-1.5 py-1.5 rounded-r-lg text-xs btn-glass hover:border-accent/30 tr-smooth border-l-0 -ml-px",
-                  sendToFlowBoard && "text-accent border-accent/30",
-                )}
-                title={
-                  sendToFlowBoard
-                    ? "Auto-send to Flow Board: on"
-                    : "Auto-send to Flow Board: off"
-                }
-              >
-                {sendToFlowBoard ? "✓" : "○"}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={goToFlowBoard}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-accent"
+              title="Open Flow Board with this API request and response"
+            >
+              <GitBranch size={12} />
+              Flow
+            </button>
             <button
               onClick={copyAsCurl}
               className={cn(

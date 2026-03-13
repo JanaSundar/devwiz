@@ -740,6 +740,11 @@ function FlowWorkflowClient({
 
   const applyApiPayload = useCallback(
     (payload: ApiFlowPayload) => {
+      if (payload.type !== "api-request-response") {
+        onConsumedApiPayload?.();
+        return;
+      }
+
       const baseX = 200;
       const baseY = 0;
       const reqId = generateId();
@@ -1136,7 +1141,7 @@ function FlowWorkflowClient({
                       Output preview
                     </label>
                     <div className="rounded border border-border bg-bg-primary p-2 max-h-48 overflow-auto">
-                      <pre className="text-[11px] font-mono text-txt whitespace-pre-wrap break-words">
+                      <pre className="text-[11px] font-mono text-txt whitespace-pre-wrap wrap-break-word">
                         {(selectedNode.data as { input?: string }).input}
                       </pre>
                     </div>
