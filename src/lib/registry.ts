@@ -80,6 +80,17 @@ export const transforms: TransformConfig[] = [
     placeholder: "Adjust bezier handles and copy CSS or Motion timing values.",
   },
   {
+    id: "vscode-theme-generator",
+    name: "VSCode Theme Generator",
+    category: "Utilities",
+    inputLabel: "Colors",
+    outputLabel: "Theme JSON",
+    inputLang: "json",
+    outputLang: "json",
+    placeholder:
+      "Customize workbench and syntax colors, then export theme JSON.",
+  },
+  {
     id: "tldraw",
     name: "Whiteboard",
     category: "Utilities",
@@ -88,6 +99,16 @@ export const transforms: TransformConfig[] = [
     inputLang: "canvas",
     outputLang: "canvas",
     placeholder: "Infinite canvas powered by tldraw",
+  },
+  {
+    id: "react-flow",
+    name: "Flow Board",
+    category: "Utilities",
+    inputLabel: "Canvas",
+    outputLabel: "Board",
+    inputLang: "canvas",
+    outputLang: "canvas",
+    placeholder: "Node-based flow diagram powered by React Flow",
   },
   {
     id: "gltf-viewer",

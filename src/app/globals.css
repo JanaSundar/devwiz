@@ -337,3 +337,22 @@
 .tr-smooth {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Flow board node inputs — no border/outline/box */
+input.flow-node-input,
+textarea.flow-node-input,
+.flow-node-input,
+.flow-node-input:focus,
+.flow-node-input:active,
+.flow-node-input:hover {
+  outline: none !important;
+  outline-width: 0 !important;
+  border: none !important;
+  border-width: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
