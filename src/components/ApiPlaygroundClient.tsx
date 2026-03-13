@@ -29,7 +29,7 @@ import {
   broadcastApiToFlowBoard,
   storeApiPayloadForFlowBoard,
 } from "@/lib/flow-workflow/apiFlowChannel";
-import { safeGetItem, safeSetItem } from "@/lib/storage";
+import { useApiPlaygroundStore } from "@/lib/stores/apiPlaygroundStore";
 import { cn } from "@/lib/utils";
 
 const METHODS = [
@@ -352,19 +352,12 @@ export default function ApiPlaygroundClient() {
   const [copied, setCopied] = useState<string | null>(null);
   const [jsonPath, setJsonPath] = useState("");
   const [findText, setFindText] = useState("");
-  const [sendToFlowBoard, setSendToFlowBoard] = useState(
-    () => safeGetItem("api_send_to_flow_board") === "true",
+  const sendToFlowBoard = useApiPlaygroundStore((s) => s.sendToFlowBoard);
+  const toggleSendToFlowBoard = useApiPlaygroundStore(
+    (s) => s.toggleSendToFlowBoard,
   );
 
   const router = useRouter();
-
-  const toggleSendToFlowBoard = useCallback(() => {
-    setSendToFlowBoard((prev) => {
-      const next = !prev;
-      safeSetItem("api_send_to_flow_board", String(next));
-      return next;
-    });
-  }, []);
 
   const hasBody = !["GET", "HEAD"].includes(method);
   const showBodySection = hasBody && bodyType !== "None";

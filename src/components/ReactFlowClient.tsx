@@ -44,9 +44,8 @@ import {
 } from "@/components/ui/dialog";
 import {
   type DiagramDisplayMode,
-  getDiagramConfig,
-  setDiagramConfig,
-} from "@/lib/flow-board/diagramConfig";
+  useDiagramConfigStore,
+} from "@/lib/flow-board/diagramConfigStore";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_JSON = `{
@@ -382,20 +381,15 @@ export default function ReactFlowClient() {
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [fitViewTrigger, setFitViewTrigger] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const [displayMode, setDisplayMode] =
-    useState<DiagramDisplayMode>("expanded");
+  const displayMode = useDiagramConfigStore((s) => s.displayMode);
+  const setDisplayMode = useDiagramConfigStore((s) => s.setDisplayMode);
   const [lastConvertedJson, setLastConvertedJson] = useState<string | null>(
     null,
   );
 
-  useEffect(() => {
-    setDisplayMode(getDiagramConfig().displayMode);
-  }, []);
-
   const handleDisplayModeChange = useCallback(
     (mode: DiagramDisplayMode) => {
       setDisplayMode(mode);
-      setDiagramConfig({ displayMode: mode });
       if (lastConvertedJson) {
         try {
           const { nodes: newNodes, edges: newEdges } = jsonToFlowData(
@@ -410,7 +404,7 @@ export default function ReactFlowClient() {
         }
       }
     },
-    [lastConvertedJson, setNodes, setEdges, setFitViewTrigger],
+    [lastConvertedJson, setDisplayMode, setNodes, setEdges, setFitViewTrigger],
   );
 
   const onConnect = useCallback(
