@@ -14,10 +14,11 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { safeGetItem, safeRemoveItem, safeSetItem } from "@/lib/storage";
+import { safeRemoveItem } from "@/lib/storage";
+import { DEFAULT_MODEL, useSettingsStore } from "@/lib/stores/settingsStore";
 import { safeParseJson } from "@/lib/utils";
 
-export const DEFAULT_MODEL = "Qwen/Qwen2.5-Coder-32B-Instruct";
+export { DEFAULT_MODEL };
 
 type HFModel = {
   id: string;
@@ -33,16 +34,17 @@ function formatNumber(n: number): string {
 }
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
+  const storeApiKey = useSettingsStore((s) => s.apiKeyHuggingface);
+  const storeModel = useSettingsStore((s) => s.hfModel);
+  const setSettings = useSettingsStore((s) => s.setSettings);
   const [hfToken, setHfToken] = useState("");
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [showToken, setShowToken] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setHfToken(safeGetItem("api_key_huggingface") || "");
-      setModel(safeGetItem("hf_model") || DEFAULT_MODEL);
-    }, 0);
-  }, []);
+    setHfToken(storeApiKey);
+    setModel(storeModel);
+  }, [storeApiKey, storeModel]);
 
   const {
     data: modelsData,
@@ -52,7 +54,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
   } = useQuery({
     queryKey: ["hf-models", hfToken],
     queryFn: async () => {
-      const tokenToUse = hfToken || safeGetItem("api_key_huggingface") || "";
+      const tokenToUse = hfToken || storeApiKey || "";
       const url = tokenToUse
         ? `/api/models?token=${encodeURIComponent(tokenToUse)}`
         : `/api/models`;
@@ -73,14 +75,12 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const fetchModels = () => refetch();
 
   const save = () => {
-    if (hfToken.trim()) safeSetItem("api_key_huggingface", hfToken.trim());
-    else safeRemoveItem("api_key_huggingface");
-
-    safeSetItem("hf_model", model);
-
+    setSettings({
+      apiKeyHuggingface: hfToken.trim(),
+      hfModel: model,
+    });
     safeRemoveItem("api_key_gemini");
     safeRemoveItem("api_key_openai");
-
     onClose();
   };
 

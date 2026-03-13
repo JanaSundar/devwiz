@@ -34,7 +34,7 @@ function parseSoapInput(input: string): {
   return { url, soapBody, soapAction };
 }
 
-import { safeGetItem } from "@/lib/storage";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { safeParseJson } from "@/lib/utils";
 
 type WorkerResult = { id: string; output: string; error: string | null };
@@ -140,8 +140,8 @@ async function streamAI(
   setIsGenerating: (v: boolean) => void,
   abortRef: React.RefObject<AbortController | null>,
 ): Promise<{ output: string; error: string | null }> {
-  const apiKey = safeGetItem("api_key_huggingface");
-  const model = safeGetItem("hf_model");
+  const { apiKeyHuggingface: apiKey, hfModel: model } =
+    useSettingsStore.getState();
 
   // Abort any previous AI request
   if (abortRef.current) abortRef.current.abort();
