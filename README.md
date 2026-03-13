@@ -6,8 +6,9 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ## Highlights
 
+- **Flow Board** – Visual node-based workspace for exploring APIs and building data pipelines. Diagram mode turns JSON into flow graphs; workflow mode chains DevWiz tools into pipelines
 - **50+ built-in tools** across utilities, converters, JSON workflows, AI tools, and playgrounds
-- **Visual and interactive tooling**: JSON, SVG, OG images, whiteboarding, cubic-bezier curves, Flex & Grid CSS
+- **Visual and interactive tooling**: JSON, SVG, OG images, whiteboarding, flow diagrams, cubic-bezier curves, Flex & Grid CSS
 - **Global Command Menu**: Quick access to all tools and themes via `Cmd+K`
 - **Flex & Grid Playground**: Interactive CSS flexbox / grid “lab” with guided challenges, presets, and live preview
 - **Date Utilities**: date-fns powered format, parse, compare, add/subtract, and more
@@ -30,6 +31,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 - Icon Search
 - Whiteboard
+- **Flow Board**: Node-based visual workspace for data structures and workflows. [Full documentation →](docs/flow-board.md)
 - Diff Viewer
 - Regex Playground
 - OG Image Generator
@@ -47,6 +49,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 - Unit Converter
 - GLTF/GLB 3D Model Viewer
 - Cubic-Bezier Visualizer
+- VSCode Theme Generator
 
 ### AI Tools
 
@@ -58,7 +61,7 @@ DevWiz is an all-in-one toolkit for everyday engineering tasks: transforms, debu
 
 ### Playground
 
-- API Playground (HTTP requests with CORS bypass, SOAP/XML support)
+- API Playground (HTTP requests with CORS bypass, SOAP/XML support; optional "Flow Board" toggle to send requests into Flow Board workflow)
 - Flex & Grid Playground
 
 ### Converters

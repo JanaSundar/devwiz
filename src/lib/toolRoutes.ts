@@ -2,6 +2,7 @@ export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
   "url-codec": "/url-codec",
   "jwt-debugger": "/jwt-debugger",
   tldraw: "/whiteboard",
+  "react-flow": "/flow-board",
   timestamp: "/timestamp",
   "date-utilities": "/date-utilities",
   "unit-converter": "/unit-converter",
@@ -25,6 +26,7 @@ export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
   "gltf-viewer": "/gltf-viewer",
   "gltf-to-jsx": "/gltf-to-jsx",
   "cubic-bezier": "/cubic-bezier",
+  "vscode-theme-generator": "/vscode-theme-generator",
   "flex-grid-playground": "/flex-grid-playground",
   "regex-playground": "/regex-playground",
 };

@@ -1,12 +1,5 @@
-import { Info } from "lucide-react";
 import type { ReactNode } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 type ToolHeaderProps = {
   title: string;
@@ -26,27 +19,15 @@ export default function ToolHeader({
   poweredBy,
 }: ToolHeaderProps) {
   const poweredByLink = poweredBy ? (
-    <TooltipProvider>
-      <Tooltip>
-        <a
-          href={poweredBy.href}
-          target="_blank"
-          rel="noreferrer"
-          className="whitespace-nowrap flex items-center gap-1 px-2 py-1 text-[9px] md:text-[10px] text-txt-muted hover:text-accent rounded-md btn-glass tr-smooth"
-        >
-          {poweredBy.label}
-          {poweredBy.icon}
-          <TooltipTrigger asChild>
-            <span className="inline-flex items-center justify-center">
-              <Info size={12} />
-            </span>
-          </TooltipTrigger>
-        </a>
-        <TooltipContent side="bottom" sideOffset={6}>
-          Credit only, not sponsored or affiliated.
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <a
+      href={poweredBy.href}
+      target="_blank"
+      rel="noreferrer"
+      className="whitespace-nowrap flex items-center gap-1 px-2 py-1 text-[9px] md:text-[10px] text-txt-muted hover:text-accent rounded-md btn-glass tr-smooth"
+    >
+      {poweredBy.label}
+      {poweredBy.icon}
+    </a>
   ) : null;
 
   return (
