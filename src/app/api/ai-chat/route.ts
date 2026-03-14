@@ -92,41 +92,15 @@ export async function POST(request: NextRequest) {
 
     const modelInstance = await getProviderModel(provider, model, apiKey);
 
-    if (stream) {
-      // Streaming response
-      const { stream: textStream } = await streamText({
-        model: modelInstance,
-        messages,
-        system: systemPrompt,
-      });
+    // Use streamText for streaming with useChat hook
+    const result = await streamText({
+      model: modelInstance,
+      messages,
+      system: systemPrompt,
+    });
 
-      const encoder = new TextEncoder();
-      const customReadable = new ReadableStream({
-        async start(controller) {
-          for await (const chunk of textStream) {
-            controller.enqueue(encoder.encode(chunk));
-          }
-          controller.close();
-        },
-      });
-
-      return new Response(customReadable, {
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      });
-    } else {
-      // Non-streaming response
-      const { text } = await generateText({
-        model: modelInstance,
-        messages,
-        system: systemPrompt,
-      });
-
-      return Response.json({ text, provider });
-    }
+    // Return response that's compatible with useChat from @ai-sdk/react
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error("[v0] Chat API error:", error);
     const errorMessage =
