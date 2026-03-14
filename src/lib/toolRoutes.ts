@@ -1,4 +1,5 @@
 export const DEDICATED_TOOL_ROUTES: Record<string, string> = {
+  "ai-chat": "/ai-chat",
   "url-codec": "/url-codec",
   "jwt-debugger": "/jwt-debugger",
   tldraw: "/whiteboard",

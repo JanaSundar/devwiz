@@ -294,59 +294,7 @@ export const transforms: TransformConfig[] = [
     outputLang: "markdown",
     placeholder: "*/5 * * * *",
   },
-  {
-    id: "ai-regex-explainer",
-    name: "Regex Explainer (AI)",
-    category: "AI Tools",
-    inputLabel: "Regex / Prompt",
-    outputLabel: "Explanation / Generated Regex",
-    inputLang: "markdown",
-    outputLang: "markdown",
-    placeholder: "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/",
-  },
-  {
-    id: "ai-code-commenter",
-    name: "Code Commenter (AI)",
-    category: "AI Tools",
-    inputLabel: "Code",
-    outputLabel: "Commented Code",
-    inputLang: "javascript",
-    outputLang: "javascript",
-    placeholder:
-      "function fibonacci(n) {\n  if (n <= 1) return n;\n  return fibonacci(n - 1) + fibonacci(n - 2);\n}",
-  },
-  {
-    id: "ai-mock-data",
-    name: "Mock Data Generator (AI)",
-    category: "AI Tools",
-    inputLabel: "Schema / Prompt",
-    outputLabel: "JSON Data",
-    inputLang: "json",
-    outputLang: "json",
-    placeholder:
-      '{\n  "users": [\n    { "name": "String", "age": "Number", "email": "String" }\n  ]\n}',
-  },
-  {
-    id: "ai-commit-msg",
-    name: "Commit Message (AI)",
-    category: "AI Tools",
-    inputLabel: "Git Diff",
-    outputLabel: "Commit Msg",
-    inputLang: "markdown",
-    outputLang: "markdown",
-    placeholder: '+ function hello() { console.log("world") }',
-  },
-  {
-    id: "ai-error-explainer",
-    name: "Error Explainer (AI)",
-    category: "AI Tools",
-    inputLabel: "Stack Trace",
-    outputLabel: "Explanation / Fix",
-    inputLang: "markdown",
-    outputLang: "markdown",
-    placeholder:
-      'TypeError: Cannot read properties of undefined (reading "map")\n    at RenderList (app.js:10:42)',
-  },
+
   // --- Converters (usage priority) ---
   {
     id: "color-converter",
@@ -581,20 +529,10 @@ export const transforms: TransformConfig[] = [
     placeholder:
       "Try Flexbox or Grid — switch mode above, edit CSS, and see the layout update live.",
   },
-];
-
-export const AI_TOOL_IDS = new Set([
-  "ai-regex-explainer",
-  "ai-code-commenter",
-  "ai-readme-writer",
-  "ai-mock-data",
-  "ai-commit-msg",
-  "ai-error-explainer",
-]);
-
-const PINNED_CATEGORIES: ToolCategory[] = [
+  ];
+  
+  const PINNED_CATEGORIES: ToolCategory[] = [
   "Utilities",
-  "AI Tools",
   "Playground",
   "Converters",
   "JSON",

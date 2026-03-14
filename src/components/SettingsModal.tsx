@@ -109,7 +109,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
             <div>
               <h3 className="text-base font-semibold text-txt">API Settings</h3>
               <p className="text-[11px] text-txt-muted">
-                Configure AI provider for Regex, Code, Mock Data & more
+                Configure AI provider for Chat, Code, Mock Data & more
               </p>
             </div>
           </div>

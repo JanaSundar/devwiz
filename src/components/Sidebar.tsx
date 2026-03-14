@@ -7,6 +7,7 @@ import {
   Menu,
   Search,
   Settings,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -294,6 +295,29 @@ function SidebarContent({
           >
             <Home size={15} className="shrink-0" />
             {showLabels && <span>Home</span>}
+          </Link>
+        </div>
+
+        {/* AI Chat */}
+        <div className="mb-3">
+          {showLabels && (
+            <p className="px-2 py-1 text-[11px] font-semibold text-txt-muted uppercase tracking-wider">
+              AI
+            </p>
+          )}
+          <Link
+            href="/ai-chat"
+            onClick={onNavClick}
+            className={cn(
+              "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] tr-smooth",
+              pathname === "/ai-chat"
+                ? "bg-accent/10 text-accent font-medium border border-accent/15"
+                : "text-txt-sec hover:bg-glass-hover hover:text-txt border border-transparent",
+              !showLabels && "justify-center",
+            )}
+          >
+            <MessageCircle size={15} className="shrink-0" />
+            {showLabels && <span>AI Chat</span>}
           </Link>
         </div>
 
