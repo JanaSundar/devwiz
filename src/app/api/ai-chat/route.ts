@@ -1,4 +1,4 @@
-import { generateText, streamText } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { createHuggingFace } from "@ai-sdk/huggingface";
 import { createGroq } from "@ai-sdk/groq";
 import type { NextRequest } from "next/server";
@@ -92,15 +92,23 @@ export async function POST(request: NextRequest) {
 
     const modelInstance = await getProviderModel(provider, model, apiKey);
 
-    // Use streamText for streaming with useChat hook
+    // Convert messages to model format if they have parts
+    const modelMessages = await convertToModelMessages(
+      messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }))
+    );
+
+    // Use streamText for streaming with assistant-ui
     const result = await streamText({
       model: modelInstance,
-      messages,
+      messages: modelMessages,
       system: systemPrompt,
     });
 
-    // Return response that's compatible with useChat from @ai-sdk/react
-    return result.toTextStreamResponse();
+    // Return response compatible with assistant-ui
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("[v0] Chat API error:", error);
     const errorMessage =
