@@ -1,5 +1,6 @@
 import { generateText, streamText } from "ai";
 import { createHuggingFace } from "@ai-sdk/huggingface";
+import { createGroq } from "@ai-sdk/groq";
 import type { NextRequest } from "next/server";
 
 type Provider = "groq" | "openrouter" | "huggingface" | "ai-sdk" | "assistant-ai";
@@ -30,8 +31,20 @@ async function getProviderModel(
 ) {
   const selectedModel = model || DEFAULT_MODELS[provider];
 
-  // For now, we'll primarily support HuggingFace through AI SDK
-  // Other providers would need their respective SDK packages
+  if (provider === "groq") {
+    if (!apiKey && !process.env.GROQ_API_KEY) {
+      throw new Error(
+        "Groq API key is required. Set GROQ_API_KEY in environment or provide it in Settings."
+      );
+    }
+
+    const groq = createGroq({
+      apiKey: apiKey || process.env.GROQ_API_KEY,
+    });
+
+    return groq(selectedModel);
+  }
+
   if (provider === "huggingface" || provider === "ai-sdk") {
     if (!apiKey && !process.env.HUGGINGFACE_API_KEY) {
       throw new Error(
@@ -46,15 +59,16 @@ async function getProviderModel(
     return hf(selectedModel);
   }
 
-  // For other providers, return a placeholder model
-  // In production, you would integrate with their specific SDK
-  console.warn(
-    `Provider ${provider} not fully implemented. Using HuggingFace as fallback.`
-  );
-  const hf = createHuggingFace({
-    apiKey: apiKey || process.env.HUGGINGFACE_API_KEY,
+  // For other unsupported providers, default to Groq
+  if (!apiKey && !process.env.GROQ_API_KEY) {
+    throw new Error("Groq API key is required. Set GROQ_API_KEY in environment.");
+  }
+
+  const groq = createGroq({
+    apiKey: apiKey || process.env.GROQ_API_KEY,
   });
-  return hf(selectedModel);
+
+  return groq(DEFAULT_MODELS.groq);
 }
 
 export async function POST(request: NextRequest) {
@@ -62,7 +76,7 @@ export async function POST(request: NextRequest) {
     const body: ChatRequest = await request.json();
     const {
       messages,
-      provider = "huggingface",
+      provider = "groq",
       model,
       systemPrompt = SYSTEM_PROMPT,
       apiKey,
@@ -90,7 +104,7 @@ export async function POST(request: NextRequest) {
       const customReadable = new ReadableStream({
         async start(controller) {
           for await (const chunk of textStream) {
-            controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
+            controller.enqueue(encoder.encode(chunk));
           }
           controller.close();
         },
@@ -98,7 +112,7 @@ export async function POST(request: NextRequest) {
 
       return new Response(customReadable, {
         headers: {
-          "Content-Type": "text/event-stream",
+          "Content-Type": "text/plain; charset=utf-8",
           "Cache-Control": "no-cache",
           Connection: "keep-alive",
         },
@@ -114,9 +128,20 @@ export async function POST(request: NextRequest) {
       return Response.json({ text, provider });
     }
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("[v0] Chat API error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
+    
+    // Provide helpful error messages for missing API keys
+    if (errorMessage.includes("API key")) {
+      return Response.json(
+        {
+          error: `${errorMessage}. Please configure your API key in Settings or set the environment variable.`,
+        },
+        { status: 401 }
+      );
+    }
+    
     return Response.json({ error: errorMessage }, { status: 500 });
   }
 }

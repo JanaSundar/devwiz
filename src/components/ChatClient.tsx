@@ -23,7 +23,7 @@ interface ChatClientProps {
 export function ChatClient({ apiKey }: ChatClientProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [provider, setProvider] = useState<Provider>("huggingface");
+  const [provider, setProvider] = useState<Provider>("groq");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -73,8 +73,16 @@ export function ChatClient({ apiKey }: ChatClientProps) {
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to get response");
+          let errorMessage = `Failed to get response (${response.status})`;
+          try {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+          } catch {
+            // Response is not JSON
+            const text = await response.text();
+            if (text) errorMessage = text;
+          }
+          throw new Error(errorMessage);
         }
 
         let assistantContent = "";
