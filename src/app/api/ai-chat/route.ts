@@ -38,84 +38,85 @@ async function getProviderModel(
         "HuggingFace API key is required. Set it in Settings or environment."
       );
     }
+
     const hf = createHuggingFace({
-      apiKey: apiKey || process.env.HUGGINGFACE_API_KEY || "",
+      apiKey: apiKey || process.env.HUGGINGFACE_API_KEY,
     });
+
     return hf(selectedModel);
   }
 
-  // For other providers, we'd implement similar logic
-  // This is a placeholder that falls back to HuggingFace
-  if (!apiKey && !process.env.HUGGINGFACE_API_KEY) {
-    throw new Error(
-      "HuggingFace API key is required. Set it in Settings or environment."
-    );
-  }
+  // For other providers, return a placeholder model
+  // In production, you would integrate with their specific SDK
+  console.warn(
+    `Provider ${provider} not fully implemented. Using HuggingFace as fallback.`
+  );
   const hf = createHuggingFace({
-    apiKey: apiKey || process.env.HUGGINGFACE_API_KEY || "",
+    apiKey: apiKey || process.env.HUGGINGFACE_API_KEY,
   });
   return hf(selectedModel);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    if (req.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const body = (await req.json()) as ChatRequest;
+    const body: ChatRequest = await request.json();
     const {
       messages,
       provider = "huggingface",
       model,
       systemPrompt = SYSTEM_PROMPT,
       apiKey,
-      stream = true,
+      stream = false,
     } = body;
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return new Response(JSON.stringify({ error: "Messages are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (!messages || messages.length === 0) {
+      return Response.json(
+        { error: "Messages array is required" },
+        { status: 400 }
+      );
     }
 
-    const providerModel = await getProviderModel(provider, model, apiKey);
+    const modelInstance = await getProviderModel(provider, model, apiKey);
 
     if (stream) {
-      const result = streamText({
-        model: providerModel,
-        system: systemPrompt,
+      // Streaming response
+      const { stream: textStream } = await streamText({
+        model: modelInstance,
         messages,
+        system: systemPrompt,
       });
 
-      return result.toTextStreamResponse();
+      const encoder = new TextEncoder();
+      const customReadable = new ReadableStream({
+        async start(controller) {
+          for await (const chunk of textStream) {
+            controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
+          }
+          controller.close();
+        },
+      });
+
+      return new Response(customReadable, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
     } else {
-      const result = await generateText({
-        model: providerModel,
-        system: systemPrompt,
+      // Non-streaming response
+      const { text } = await generateText({
+        model: modelInstance,
         messages,
+        system: systemPrompt,
       });
 
-      return new Response(JSON.stringify({ text: result.text }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return Response.json({ text, provider });
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("[AI Chat API Error]", message);
-    return new Response(
-      JSON.stringify({
-        error: message || "Failed to process chat request",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    console.error("Chat API error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return Response.json({ error: errorMessage }, { status: 500 });
   }
 }
