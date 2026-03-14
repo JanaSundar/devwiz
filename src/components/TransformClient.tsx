@@ -17,7 +17,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
 import ToolHeader from "@/components/tooling/ToolHeader";
 import { useTransformWorker } from "@/hooks/useTransformWorker";
-import { AI_TOOL_IDS, getTransformById, transforms } from "@/lib/registry";
+import { getTransformById, transforms } from "@/lib/registry";
 import { cn, safeParseJson } from "@/lib/utils";
 
 const MAX_TRANSFORM_INPUT = 1.5 * 1024 * 1024; // 1.5MB
@@ -29,7 +29,6 @@ export default function TransformClient() {
   const toolId = params.toolId;
   const tool = getTransformById(toolId);
   const { transform, isGenerating } = useTransformWorker();
-  const isAiTool = !!toolId && AI_TOOL_IDS.has(toolId);
 
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -79,21 +78,14 @@ export default function TransformClient() {
       if (!toolId) return;
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      const delay = AI_TOOL_IDS.has(toolId) ? 0 : 150;
+      const delay = 150;
       debounceRef.current = setTimeout(async () => {
-        const onStream = AI_TOOL_IDS.has(toolId)
-          ? (chunk: string) => {
-              if (currentReq === requestCntRef.current) {
-                setOutput((prev) => (prev !== chunk ? chunk : prev));
-              }
-            }
-          : undefined;
 
         const optsToUse =
           toolId === "soap-to-rest"
             ? { ...opts, target: opts?.target ?? soapTarget }
             : (opts ?? svgrOptions);
-        const r = await transform(toolId, val, onStream, optsToUse);
+        const r = await transform(toolId, val, undefined, optsToUse);
         if (currentReq === requestCntRef.current) {
           let finalOutput = r.output;
 
@@ -117,21 +109,11 @@ export default function TransformClient() {
     window.dispatchEvent(new CustomEvent("open-settings"));
   }, []);
 
-  useEffect(() => {
-    if (!isAiTool) return;
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        if (input.trim() && !isGenerating) void executeTransform(input);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isAiTool, input, isGenerating, executeTransform]);
+
 
   const handleInputChange = useCallback(
     (val: string) => {
-      if (!isAiTool && val.length > MAX_TRANSFORM_INPUT) {
+      if (val.length > MAX_TRANSFORM_INPUT) {
         setError(
           `Input too large (${(val.length / 1024).toFixed(0)}KB). Max 1.5MB.`,
         );
@@ -139,10 +121,9 @@ export default function TransformClient() {
       }
       setInput(val);
       setError(null);
-      if (isAiTool) return;
       void executeTransform(val);
     },
-    [executeTransform, isAiTool],
+    [executeTransform],
   );
 
   const handleRun = useCallback(() => {
@@ -167,9 +148,7 @@ export default function TransformClient() {
   const handleExample = () => {
     if (!tool?.placeholder) return;
     setInput(tool.placeholder);
-    if (!isAiTool) {
-      void executeTransform(tool.placeholder);
-    }
+    void executeTransform(tool.placeholder);
   };
 
   const handleFormat = () => {
@@ -179,9 +158,7 @@ export default function TransformClient() {
         const formatted = JSON.stringify(JSON.parse(input), null, 2);
         if (formatted !== input) {
           setInput(formatted);
-          if (!isAiTool) {
-            void executeTransform(formatted);
-          }
+          void executeTransform(formatted);
         }
       }
     } catch {
@@ -243,12 +220,7 @@ export default function TransformClient() {
   if (!tool) return null;
 
   return (
-    <div
-      className={cn(
-        "flex flex-col h-full anim-in",
-        isAiTool && "bg-linear-to-b from-accent/5 via-accent/2 to-transparent",
-      )}
-    >
+    <div className="flex flex-col h-full anim-in">
       <ToolHeader
         title={tool.name}
         badge={tool.category}
@@ -275,43 +247,21 @@ export default function TransformClient() {
                 </button>
               </>
             )}
-            {!isAiTool && (
-              <button
-                onClick={handleExample}
-                className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass hover:border-accent/30 tr-smooth"
-              >
-                <Sparkles size={12} />
-                Example
-              </button>
-            )}
-            {isAiTool && (
-              <button
-                onClick={handleRun}
-                disabled={!input.trim() || isGenerating}
-                className={cn(
-                  "whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium tr-smooth",
-                  input.trim() && !isGenerating
-                    ? "btn-accent shadow-[0_0_12px_var(--color-accent-glow)] hover:shadow-[0_0_16px_var(--color-accent-glow)]"
-                    : "btn-accent opacity-50 cursor-not-allowed",
-                )}
-              >
-                {isGenerating ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : (
-                  <Wand2 size={12} />
-                )}
-                Run
-              </button>
-            )}
-            {!isAiTool && (
-              <button
-                onClick={handleClear}
-                className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass hover:border-accent/30 tr-smooth"
-              >
-                <Trash2 size={12} />
-                Clear
-              </button>
-            )}
+            <button
+              onClick={handleExample}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass hover:border-accent/30 tr-smooth"
+            >
+              <Wand2 size={12} />
+              Example
+            </button>
+
+            <button
+              onClick={handleClear}
+              className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs btn-glass hover:border-accent/30 tr-smooth"
+            >
+              <Trash2 size={12} />
+              Clear
+            </button>
             <button
               onClick={handleCopy}
               disabled={!output}
@@ -331,30 +281,7 @@ export default function TransformClient() {
         }
       />
 
-      {/* AI Tool hint bar */}
-      {isAiTool && (
-        <div className="px-4 md:px-6 py-3 border-b border-border/50 bg-bg-secondary/40 flex flex-wrap items-center gap-3 text-[11px]">
-          <span className="flex items-center gap-1.5 text-txt-muted">
-            <kbd className="px-2 py-0.5 rounded-lg bg-bg-primary border border-border font-mono text-[10px] shadow-sm">
-              ⌘
-            </kbd>
-            <span>+</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-bg-primary border border-border font-mono text-[10px] shadow-sm">
-              Enter
-            </kbd>
-            <span>to run</span>
-          </span>
-          <span className="w-px h-4 bg-border/60" />
-          <button
-            type="button"
-            onClick={openSettings}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-accent hover:bg-accent/10 border border-transparent hover:border-accent/20 tr-smooth"
-          >
-            <Settings size={12} />
-            <span>API Settings</span>
-          </button>
-        </div>
-      )}
+
 
       {/* Error */}
       {error && (
@@ -485,7 +412,7 @@ export default function TransformClient() {
               <span className="text-txt-muted/50 truncate">
                 — {tool.inputLabel}
               </span>
-              {!isAiTool && tool?.inputLang === "json" && (
+              {tool?.inputLang === "json" && (
                 <button
                   onClick={handleFormat}
                   className="ml-auto flex items-center gap-1.5 px-2 py-1 rounded bg-accent/10 text-accent hover:bg-accent/20 tr-smooth text-[11px] font-medium"
@@ -510,12 +437,7 @@ export default function TransformClient() {
 
           <div className="flex flex-col min-w-0 min-h-[300px] lg:min-h-0 flex-1 basis-0 overflow-hidden">
             <div
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 text-xs text-txt-muted border-b border-border shrink-0 rounded-t-xl border-x border-t bg-bg-secondary",
-                isAiTool &&
-                  isGenerating &&
-                  "bg-amber-500/5 border-amber-500/20",
-              )}
+              className="flex items-center gap-2 px-3 py-2 text-xs text-txt-muted border-b border-border shrink-0 rounded-t-xl border-x border-t bg-bg-secondary"
             >
               <span
                 className={cn(
@@ -564,9 +486,7 @@ export default function TransformClient() {
                     ? "Paste SVG or upload a file to generate React JSX…"
                     : toolId === "tailwind-to-css"
                       ? "Paste Tailwind classes to generate CSS…"
-                      : isAiTool
-                        ? "Paste your input and press Run or ⌘ Enter to generate…"
-                        : `Paste ${tool.inputLabel.toLowerCase()} to convert…`
+                      : `Paste ${tool.inputLabel.toLowerCase()} to convert…`
                 }
               />
             </div>

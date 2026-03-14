@@ -1,6 +1,5 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AI_TOOL_IDS } from "@/lib/registry";
 
 function parseSoapInput(input: string): {
   url: string;
@@ -69,11 +68,6 @@ export function useTransformWorker() {
       onStream?: (chunk: string) => void,
       options?: Record<string, unknown>,
     ): Promise<{ output: string; error: string | null }> => {
-      // AI tools go through the API route with streaming
-      if (AI_TOOL_IDS.has(toolId)) {
-        return streamAI(toolId, input, onStream, setIsGenerating, abortRef);
-      }
-
       // SVG to JSX runs on the server API to avoid heavy Babel bundles in the browser
       if (toolId === "svg-to-jsx") {
         try {
@@ -133,66 +127,4 @@ export function useTransformWorker() {
   return { transform, isGenerating };
 }
 
-async function streamAI(
-  toolId: string,
-  input: string,
-  onStream: ((chunk: string) => void) | undefined,
-  setIsGenerating: (v: boolean) => void,
-  abortRef: React.RefObject<AbortController | null>,
-): Promise<{ output: string; error: string | null }> {
-  const { apiKeyHuggingface: apiKey, hfModel: model } =
-    useSettingsStore.getState();
 
-  // Abort any previous AI request
-  if (abortRef.current) abortRef.current.abort();
-  const controller = new AbortController();
-  abortRef.current = controller;
-
-  setIsGenerating(true);
-
-  try {
-    const res = await fetch("/api/ai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toolId, input, apiKey, model }),
-      signal: controller.signal,
-    });
-
-    if (!res.ok) {
-      const data = await safeParseJson<{ error?: string }>(res);
-      setIsGenerating(false);
-      return { output: "", error: data.error || `API error (${res.status})` };
-    }
-
-    // Read the stream
-    const reader = res.body?.getReader();
-    if (!reader) {
-      setIsGenerating(false);
-      return { output: "", error: "No response stream" };
-    }
-
-    const decoder = new TextDecoder();
-    let fullText = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      fullText += chunk;
-      onStream?.(fullText);
-    }
-
-    setIsGenerating(false);
-    return { output: fullText, error: null };
-  } catch (err) {
-    setIsGenerating(false);
-    if ((err as Error).name === "AbortError") {
-      return { output: "", error: null };
-    }
-    return {
-      output: "",
-      error: err instanceof Error ? err.message : "Failed to reach AI service",
-    };
-  }
-}
